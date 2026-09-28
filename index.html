@@ -9,481 +9,84 @@
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-
-  html, body {
-    width: 100%; height: 100%; overflow: hidden;
-    background: #050810;
-    color: #fff;
-    font-family: 'Segoe UI', 'SF Pro Display', Tahoma, sans-serif;
-    touch-action: none;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(circle at 20% 10%, rgba(79,195,247,0.12) 0%, transparent 45%),
-      radial-gradient(circle at 80% 90%, rgba(255,107,107,0.10) 0%, transparent 45%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  #gameWrap {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column; overflow: hidden;
-    z-index: 1;
-  }
-
-  .topBar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 20px;
-    background: linear-gradient(180deg, rgba(15,20,40,0.95), rgba(10,14,30,0.75));
-    border-bottom: 1px solid rgba(79,195,247,0.2);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-    z-index: 10;
-    gap: 12px;
-    backdrop-filter: blur(20px);
-    padding-top: calc(10px + env(safe-area-inset-top));
-    position: relative;
-  }
-  .topBar::after {
-    content: '';
-    position: absolute;
-    left: 0; right: 0; bottom: -1px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(79,195,247,0.5), transparent);
-  }
-
-  .player-score {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 18px;
-    border-radius: 14px;
-    background: rgba(0,0,0,0.4);
-    border: 2px solid;
-    transition: all 0.3s ease;
-    font-size: 0.9em;
-    backdrop-filter: blur(10px);
-  }
-  .player-score.p1 {
-    border-color: rgba(79,195,247,0.6);
-    color: #4fc3f7;
-    box-shadow: 0 0 20px rgba(79,195,247,0.25);
-  }
-  .player-score.p2 {
-    border-color: rgba(255,107,107,0.6);
-    color: #ff6b6b;
-    box-shadow: 0 0 20px rgba(255,107,107,0.25);
-  }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #050810; color: #fff; font-family: 'Segoe UI', 'SF Pro Display', Tahoma, sans-serif; touch-action: none; }
+  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(circle at 20% 10%, rgba(79,195,247,0.12) 0%, transparent 45%), radial-gradient(circle at 80% 90%, rgba(255,107,107,0.10) 0%, transparent 45%); pointer-events: none; z-index: 0; }
+  #gameWrap { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; z-index: 1; }
+  .topBar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: linear-gradient(180deg, rgba(15,20,40,0.95), rgba(10,14,30,0.75)); border-bottom: 1px solid rgba(79,195,247,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.6); z-index: 10; gap: 12px; backdrop-filter: blur(20px); padding-top: calc(10px + env(safe-area-inset-top)); position: relative; }
+  .topBar::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: linear-gradient(90deg, transparent, rgba(79,195,247,0.5), transparent); }
+  .player-score { display: flex; align-items: center; gap: 10px; padding: 8px 18px; border-radius: 14px; background: rgba(0,0,0,0.4); border: 2px solid; transition: all 0.3s ease; font-size: 0.9em; backdrop-filter: blur(10px); }
+  .player-score.p1 { border-color: rgba(79,195,247,0.6); color: #4fc3f7; box-shadow: 0 0 20px rgba(79,195,247,0.25); }
+  .player-score.p2 { border-color: rgba(255,107,107,0.6); color: #ff6b6b; box-shadow: 0 0 20px rgba(255,107,107,0.25); }
   .player-score .label { font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85em; }
-  .player-score .score {
-    font-size: 1.5em; font-weight: 800;
-    color: #fff; font-variant-numeric: tabular-nums;
-    text-shadow: 0 0 15px currentColor;
-    line-height: 1;
-  }
-
+  .player-score .score { font-size: 1.5em; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; text-shadow: 0 0 15px currentColor; line-height: 1; }
   .round-info { text-align: center; flex: 1; min-width: 100px; }
-  .round-info .round-label {
-    font-size: 0.65em; color: #7a9cbd;
-    letter-spacing: 3px; text-transform: uppercase;
-    margin-bottom: 2px;
-  }
-  .round-info .round-value {
-    font-size: 1.1em; font-weight: 700;
-    color: #ffd54f;
-    text-shadow: 0 0 15px rgba(255,213,79,0.6);
-    letter-spacing: 2px;
-  }
-
-  #canvasWrap {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    overflow: hidden; position: relative; padding: 12px;
-    z-index: 1;
-  }
-
-  #gameCanvas {
-    display: block;
-    border-radius: 8px;
-    touch-action: none;
-    max-width: 100%; max-height: 100%;
-    box-shadow:
-      0 0 60px rgba(79,195,247,0.25),
-      0 0 120px rgba(0,0,0,0.9);
-    border: 1px solid rgba(79,195,247,0.2);
-  }
-
-  .mobileJoystick {
-    display: none;
-    position: fixed;
-    bottom: calc(30px + env(safe-area-inset-bottom));
-    width: 140px; height: 140px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 60%, transparent 80%);
-    border: 2px solid rgba(255,255,255,0.2);
-    z-index: 50;
-    touch-action: none;
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
-    transition: all 0.2s;
-  }
-  .mobileJoystick.p1 {
-    left: 25px;
-    border-color: rgba(79,195,247,0.6);
-    box-shadow: 0 0 25px rgba(79,195,247,0.5), inset 0 0 30px rgba(79,195,247,0.15);
-  }
-  .mobileJoystick.p2 {
-    right: 25px;
-    border-color: rgba(255,107,107,0.6);
-    box-shadow: 0 0 25px rgba(255,107,107,0.5), inset 0 0 30px rgba(255,107,107,0.15);
-  }
-
-  .mobileJoystick .stick {
-    position: absolute; top: 50%; left: 50%;
-    width: 64px; height: 64px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9) 0%, rgba(200,220,240,0.65) 40%, rgba(80,100,140,0.55) 100%);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    border: 2px solid rgba(255,255,255,0.4);
-    transition: box-shadow 0.15s;
-  }
+  .round-info .round-label { font-size: 0.65em; color: #7a9cbd; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
+  .round-info .round-value { font-size: 1.1em; font-weight: 700; color: #ffd54f; text-shadow: 0 0 15px rgba(255,213,79,0.6); letter-spacing: 2px; }
+  #canvasWrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; padding: 12px; z-index: 1; }
+  #gameCanvas { display: block; border-radius: 8px; touch-action: none; max-width: 100%; max-height: 100%; box-shadow: 0 0 60px rgba(79,195,247,0.25), 0 0 120px rgba(0,0,0,0.9); border: 1px solid rgba(79,195,247,0.2); }
+  .mobileJoystick { display: none; position: fixed; bottom: calc(30px + env(safe-area-inset-bottom)); width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 60%, transparent 80%); border: 2px solid rgba(255,255,255,0.2); z-index: 50; touch-action: none; backdrop-filter: blur(10px); box-shadow: inset 0 0 30px rgba(0,0,0,0.5); transition: all 0.2s; }
+  .mobileJoystick.p1 { left: 25px; border-color: rgba(79,195,247,0.6); box-shadow: 0 0 25px rgba(79,195,247,0.5), inset 0 0 30px rgba(79,195,247,0.15); }
+  .mobileJoystick.p2 { right: 25px; border-color: rgba(255,107,107,0.6); box-shadow: 0 0 25px rgba(255,107,107,0.5), inset 0 0 30px rgba(255,107,107,0.15); }
+  .mobileJoystick .stick { position: absolute; top: 50%; left: 50%; width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9) 0%, rgba(200,220,240,0.65) 40%, rgba(80,100,140,0.55) 100%); transform: translate(-50%, -50%); pointer-events: none; border: 2px solid rgba(255,255,255,0.4); transition: box-shadow 0.15s; }
   .mobileJoystick.p1 .stick { box-shadow: 0 0 20px rgba(79,195,247,0.9), 0 4px 12px rgba(0,0,0,0.6); }
   .mobileJoystick.p2 .stick { box-shadow: 0 0 20px rgba(255,107,107,0.9), 0 4px 12px rgba(0,0,0,0.6); }
-
-  .mobileJoystick .arrow {
-    position: absolute;
-    color: rgba(255,255,255,0.35);
-    font-size: 1.1em;
-    font-weight: bold;
-    pointer-events: none;
-    transition: all 0.15s;
-  }
+  .mobileJoystick .arrow { position: absolute; color: rgba(255,255,255,0.35); font-size: 1.1em; font-weight: bold; pointer-events: none; transition: all 0.15s; }
   .mobileJoystick .arrow.up    { top: 6px;    left: 50%; transform: translateX(-50%); }
   .mobileJoystick .arrow.down  { bottom: 6px; left: 50%; transform: translateX(-50%); }
   .mobileJoystick .arrow.left  { left: 6px;   top: 50%;  transform: translateY(-50%); }
   .mobileJoystick .arrow.right { right: 6px;  top: 50%;  transform: translateY(-50%); }
   .mobileJoystick.active .arrow { color: rgba(255,255,255,0.85); }
-
-  .mobileFireBtn {
-    display: none;
-    position: fixed;
-    bottom: calc(40px + env(safe-area-inset-bottom));
-    width: 95px; height: 95px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #ffb3b3 0%, #ff6b6b 30%, #cc0000 80%);
-    border: 3px solid rgba(255,180,180,0.8);
-    box-shadow:
-      0 0 30px rgba(255,107,107,0.7),
-      0 6px 20px rgba(0,0,0,0.5);
-    color: #fff;
-    font-size: 2.2em;
-    z-index: 50;
-    align-items: center;
-    justify-content: center;
-    touch-action: none;
-    user-select: none;
-    transition: transform 0.08s, box-shadow 0.1s;
-    font-weight: bold;
-  }
+  .mobileFireBtn { display: none; position: fixed; bottom: calc(40px + env(safe-area-inset-bottom)); width: 95px; height: 95px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffb3b3 0%, #ff6b6b 30%, #cc0000 80%); border: 3px solid rgba(255,180,180,0.8); box-shadow: 0 0 30px rgba(255,107,107,0.7), 0 6px 20px rgba(0,0,0,0.5); color: #fff; font-size: 2.2em; z-index: 50; align-items: center; justify-content: center; touch-action: none; user-select: none; transition: transform 0.08s, box-shadow 0.1s; font-weight: bold; }
   .mobileFireBtn.p1 { right: 30px; }
   .mobileFireBtn.p2 { left: 30px; }
-  .mobileFireBtn:active, .mobileFireBtn.pressed {
-    transform: scale(0.9);
-    box-shadow:
-      0 0 50px rgba(255,107,107,1),
-      0 0 80px rgba(255,107,107,0.6);
-  }
-
-  .overlay {
-    position: fixed; inset: 0;
-    background: radial-gradient(circle at 50% 40%, rgba(20,30,55,0.95) 0%, rgba(5,8,16,0.98) 70%);
-    backdrop-filter: blur(15px);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    z-index: 100; padding: 20px; text-align: center;
-    overflow-y: auto;
-  }
+  .mobileFireBtn:active, .mobileFireBtn.pressed { transform: scale(0.9); box-shadow: 0 0 50px rgba(255,107,107,1), 0 0 80px rgba(255,107,107,0.6); }
+  .overlay { position: fixed; inset: 0; background: radial-gradient(circle at 50% 40%, rgba(20,30,55,0.95) 0%, rgba(5,8,16,0.98) 70%); backdrop-filter: blur(15px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 20px; text-align: center; overflow-y: auto; }
   .overlay.hidden { display: none; }
-
-  .overlay h1 {
-    font-size: 3em;
-    margin-bottom: 15px;
-    background: linear-gradient(90deg, #4fc3f7 0%, #00e5ff 30%, #ffd54f 50%, #00e5ff 70%, #4fc3f7 100%);
-    background-size: 300% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shine 4s linear infinite;
-    letter-spacing: 4px;
-    font-weight: 800;
-  }
+  .overlay h1 { font-size: 3em; margin-bottom: 15px; background: linear-gradient(90deg, #4fc3f7 0%, #00e5ff 30%, #ffd54f 50%, #00e5ff 70%, #4fc3f7 100%); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shine 4s linear infinite; letter-spacing: 4px; font-weight: 800; }
   @keyframes shine { to { background-position: 300% center; } }
-
-  .overlay h2 {
-    font-size: 1.8em; margin-bottom: 15px;
-    color: #4fc3f7;
-    letter-spacing: 2px;
-    font-weight: 700;
-  }
-
-  .overlay p {
-    font-size: 1em; color: #a0b8d0;
-    margin-bottom: 15px; max-width: 500px;
-    line-height: 1.6;
-  }
-
-  .overlay button {
-    padding: 16px 36px;
-    font-size: 1.05em; font-weight: 700;
-    letter-spacing: 1.5px;
-    border: none; border-radius: 14px;
-    cursor: pointer; color: #fff;
-    background: linear-gradient(135deg, #4fc3f7, #0288d1);
-    box-shadow: 0 6px 20px rgba(79,195,247,0.4);
-    text-transform: uppercase;
-    font-family: inherit;
-    margin: 6px; min-height: 52px;
-    transition: all 0.3s ease;
-  }
+  .overlay h2 { font-size: 1.8em; margin-bottom: 15px; color: #4fc3f7; letter-spacing: 2px; font-weight: 700; }
+  .overlay p { font-size: 1em; color: #a0b8d0; margin-bottom: 15px; max-width: 500px; line-height: 1.6; }
+  .overlay button { padding: 16px 36px; font-size: 1.05em; font-weight: 700; letter-spacing: 1.5px; border: none; border-radius: 14px; cursor: pointer; color: #fff; background: linear-gradient(135deg, #4fc3f7, #0288d1); box-shadow: 0 6px 20px rgba(79,195,247,0.4); text-transform: uppercase; font-family: inherit; margin: 6px; min-height: 52px; transition: all 0.3s ease; }
   .overlay button:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(79,195,247,0.6); }
   .overlay button:active { transform: translateY(0); }
-
-  .overlay button.danger {
-    background: linear-gradient(135deg, #ff6b6b, #cc0000);
-    box-shadow: 0 6px 20px rgba(255,107,107,0.4);
-  }
-  .overlay button.success {
-    background: linear-gradient(135deg, #66bb6a, #388e3c);
-    box-shadow: 0 6px 20px rgba(102,187,106,0.4);
-  }
-  .overlay button.gold {
-    background: linear-gradient(135deg, #ffd54f, #f57c00);
-    box-shadow: 0 6px 20px rgba(255,213,79,0.5);
-    color: #1a1a1a;
-  }
-
-  .menu-buttons {
-    display: flex; gap: 15px;
-    flex-wrap: wrap; justify-content: center;
-    margin-top: 15px;
-    width: 100%; max-width: 500px;
-  }
+  .overlay button.danger { background: linear-gradient(135deg, #ff6b6b, #cc0000); box-shadow: 0 6px 20px rgba(255,107,107,0.4); }
+  .overlay button.success { background: linear-gradient(135deg, #66bb6a, #388e3c); box-shadow: 0 6px 20px rgba(102,187,106,0.4); }
+  .overlay button.gold { background: linear-gradient(135deg, #ffd54f, #f57c00); box-shadow: 0 6px 20px rgba(255,213,79,0.5); color: #1a1a1a; }
+  .menu-buttons { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 15px; width: 100%; max-width: 500px; }
   .menu-buttons button { flex: 1 1 200px; max-width: 240px; }
-
-  .room-code-box {
-    background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(0,229,255,0.08));
-    border: 2px dashed rgba(79,195,247,0.6);
-    border-radius: 18px;
-    padding: 22px 35px;
-    margin: 20px 0;
-    font-size: 2.8em;
-    font-weight: 800;
-    letter-spacing: 10px;
-    color: #00e5ff;
-    text-shadow: 0 0 20px rgba(0,229,255,0.9);
-    animation: pulse-glow 2s ease-in-out infinite;
-    word-break: break-all;
-    font-family: 'Courier New', monospace;
-  }
-  @keyframes pulse-glow {
-    0%,100% { box-shadow: 0 0 30px rgba(0,229,255,0.4); }
-    50% { box-shadow: 0 0 60px rgba(0,229,255,0.8); }
-  }
-
-  .copy-box {
-    display: flex; gap: 10px;
-    align-items: center; justify-content: center;
-    margin: 15px 0; flex-wrap: wrap;
-    width: 100%; max-width: 500px;
-  }
-  .copy-box input {
-    padding: 14px 18px; font-size: 0.85em;
-    border-radius: 10px;
-    border: 2px solid rgba(79,195,247,0.4);
-    background: rgba(10,20,40,0.8);
-    color: #a0c8e0;
-    flex: 1; min-width: 200px;
-    font-family: monospace;
-    outline: none;
-  }
-
-  .input-group {
-    display: flex; gap: 10px;
-    margin: 20px 0; flex-wrap: wrap;
-    justify-content: center;
-  }
-  input.codeInput {
-    padding: 16px 24px;
-    font-size: 1.4em; border-radius: 14px;
-    border: 2px solid rgba(79,195,247,0.5);
-    background: rgba(10,20,40,0.8);
-    color: #fff; outline: none;
-    text-align: center;
-    letter-spacing: 8px; font-weight: 800;
-    text-transform: uppercase;
-    width: 250px; font-family: 'Courier New', monospace;
-  }
-  input.codeInput:focus {
-    border-color: #4fc3f7;
-    box-shadow: 0 0 30px rgba(79,195,247,0.6);
-  }
-
-  .controls-info {
-    background: linear-gradient(135deg, rgba(20,30,55,0.9), rgba(15,20,40,0.95));
-    border: 1px solid rgba(79,195,247,0.3);
-    border-radius: 18px;
-    padding: 22px 28px;
-    margin: 15px 0;
-    max-width: 520px;
-    text-align: left;
-    width: 100%;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-    backdrop-filter: blur(15px);
-  }
-  .controls-info h3 {
-    color: #4fc3f7;
-    margin-bottom: 15px;
-    text-align: center;
-    font-size: 0.9em;
-    letter-spacing: 3px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-  .controls-info .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    font-size: 0.85em;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
+  .room-code-box { background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(0,229,255,0.08)); border: 2px dashed rgba(79,195,247,0.6); border-radius: 18px; padding: 22px 35px; margin: 20px 0; font-size: 2.8em; font-weight: 800; letter-spacing: 10px; color: #00e5ff; text-shadow: 0 0 20px rgba(0,229,255,0.9); animation: pulse-glow 2s ease-in-out infinite; word-break: break-all; font-family: 'Courier New', monospace; }
+  @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 30px rgba(0,229,255,0.4); } 50% { box-shadow: 0 0 60px rgba(0,229,255,0.8); } }
+  .copy-box { display: flex; gap: 10px; align-items: center; justify-content: center; margin: 15px 0; flex-wrap: wrap; width: 100%; max-width: 500px; }
+  .copy-box input { padding: 14px 18px; font-size: 0.85em; border-radius: 10px; border: 2px solid rgba(79,195,247,0.4); background: rgba(10,20,40,0.8); color: #a0c8e0; flex: 1; min-width: 200px; font-family: monospace; outline: none; }
+  .input-group { display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
+  input.codeInput { padding: 16px 24px; font-size: 1.4em; border-radius: 14px; border: 2px solid rgba(79,195,247,0.5); background: rgba(10,20,40,0.8); color: #fff; outline: none; text-align: center; letter-spacing: 8px; font-weight: 800; text-transform: uppercase; width: 250px; font-family: 'Courier New', monospace; }
+  input.codeInput:focus { border-color: #4fc3f7; box-shadow: 0 0 30px rgba(79,195,247,0.6); }
+  .controls-info { background: linear-gradient(135deg, rgba(20,30,55,0.9), rgba(15,20,40,0.95)); border: 1px solid rgba(79,195,247,0.3); border-radius: 18px; padding: 22px 28px; margin: 15px 0; max-width: 520px; text-align: left; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
+  .controls-info h3 { color: #4fc3f7; margin-bottom: 15px; text-align: center; font-size: 0.9em; letter-spacing: 3px; font-weight: 700; text-transform: uppercase; }
+  .controls-info .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85em; gap: 10px; flex-wrap: wrap; }
   .controls-info .row:last-child { border-bottom: none; }
-  .controls-info .key {
-    background: linear-gradient(180deg, rgba(79,195,247,0.25), rgba(79,195,247,0.1));
-    border: 1px solid rgba(79,195,247,0.5);
-    border-bottom-width: 2px;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-family: 'Courier New', monospace;
-    color: #7fdbff;
-    font-weight: 700;
-    display: inline-block;
-    margin: 1px;
-    font-size: 0.9em;
-  }
+  .controls-info .key { background: linear-gradient(180deg, rgba(79,195,247,0.25), rgba(79,195,247,0.1)); border: 1px solid rgba(79,195,247,0.5); border-bottom-width: 2px; padding: 3px 10px; border-radius: 6px; font-family: 'Courier New', monospace; color: #7fdbff; font-weight: 700; display: inline-block; margin: 1px; font-size: 0.9em; }
   .controls-info .p1 { color: #4fc3f7; font-weight: 700; }
   .controls-info .p2 { color: #ff6b6b; font-weight: 700; }
-
-  .notification {
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    background: linear-gradient(135deg, rgba(79,195,247,0.98), rgba(2,136,209,0.98));
-    padding: 35px 60px;
-    border-radius: 24px;
-    font-size: 1.8em;
-    font-weight: 800;
-    z-index: 200;
-    box-shadow: 0 25px 70px rgba(0,0,0,0.7);
-    text-align: center;
-    pointer-events: none;
-    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    max-width: 90vw;
-    letter-spacing: 2px;
-  }
+  .notification { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: linear-gradient(135deg, rgba(79,195,247,0.98), rgba(2,136,209,0.98)); padding: 35px 60px; border-radius: 24px; font-size: 1.8em; font-weight: 800; z-index: 200; box-shadow: 0 25px 70px rgba(0,0,0,0.7); text-align: center; pointer-events: none; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); max-width: 90vw; letter-spacing: 2px; }
   .notification.show { transform: translate(-50%, -50%) scale(1); }
-
-  .roundBanner {
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) scale(0.5);
-    z-index: 150;
-    text-align: center;
-    pointer-events: none;
-    opacity: 0;
-    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  }
-  .roundBanner.show {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  .roundBanner h1 {
-    font-size: 3.5em;
-    margin-bottom: 15px;
-    letter-spacing: 4px;
-    font-weight: 800;
-    text-shadow: 0 0 40px currentColor, 0 0 80px currentColor;
-    animation: bannerPulse 0.8s ease-in-out infinite alternate;
-  }
-  @keyframes bannerPulse {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.05); }
-  }
-  .roundBanner .subtitle {
-    font-size: 1.2em;
-    color: #a0b8d0;
-    letter-spacing: 2px;
-    font-weight: 600;
-  }
-  .roundBanner .countdown {
-    font-size: 4em;
-    font-weight: 800;
-    color: #ffd54f;
-    margin-top: 20px;
-    text-shadow: 0 0 40px rgba(255,213,79,0.9);
-    animation: countPulse 1s ease-in-out infinite;
-  }
-  @keyframes countPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-  }
-
-  .soundBtn {
-    position: absolute;
-    top: calc(12px + env(safe-area-inset-top));
-    right: 12px;
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.6);
-    border: 2px solid rgba(102,187,106,0.7);
-    color: #fff;
-    font-size: 1.2em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 20;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 20px rgba(102,187,106,0.4);
-  }
-  .soundBtn.muted {
-    border-color: rgba(117,117,117,0.6);
-    box-shadow: none;
-    background: rgba(0,0,0,0.4);
-  }
-
-  .loader {
-    display: inline-block;
-    width: 50px; height: 50px;
-    border: 4px solid rgba(79,195,247,0.2);
-    border-top-color: #4fc3f7;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-    box-shadow: 0 0 30px rgba(79,195,247,0.4);
-  }
+  .roundBanner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); z-index: 150; text-align: center; pointer-events: none; opacity: 0; transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+  .roundBanner.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  .roundBanner h1 { font-size: 3.5em; margin-bottom: 15px; letter-spacing: 4px; font-weight: 800; text-shadow: 0 0 40px currentColor, 0 0 80px currentColor; animation: bannerPulse 0.8s ease-in-out infinite alternate; }
+  @keyframes bannerPulse { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
+  .roundBanner .subtitle { font-size: 1.2em; color: #a0b8d0; letter-spacing: 2px; font-weight: 600; }
+  .roundBanner .countdown { font-size: 4em; font-weight: 800; color: #ffd54f; margin-top: 20px; text-shadow: 0 0 40px rgba(255,213,79,0.9); animation: countPulse 1s ease-in-out infinite; }
+  @keyframes countPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+  .soundBtn { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid rgba(102,187,106,0.7); color: #fff; font-size: 1.2em; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 20; backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(102,187,106,0.4); }
+  .soundBtn.muted { border-color: rgba(117,117,117,0.6); box-shadow: none; background: rgba(0,0,0,0.4); }
+  .loader { display: inline-block; width: 50px; height: 50px; border: 4px solid rgba(79,195,247,0.2); border-top-color: #4fc3f7; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; box-shadow: 0 0 30px rgba(79,195,247,0.4); }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   body.is-mobile .mobileJoystick { display: block; }
   body.is-mobile .mobileFireBtn { display: flex; }
-
   body.is-mobile.online-p1 .mobileJoystick.p2,
   body.is-mobile.online-p1 .mobileFireBtn.p2 { display: none !important; }
   body.is-mobile.online-p2 .mobileJoystick.p1,
   body.is-mobile.online-p2 .mobileFireBtn.p1 { display: none !important; }
-
   @media (max-width: 600px) {
     .topBar { padding: 8px 12px; }
     .player-score { padding: 5px 12px; font-size: 0.8em; }
@@ -500,7 +103,6 @@
     .roundBanner h1 { font-size: 2.2em; }
     .roundBanner .countdown { font-size: 3em; }
   }
-
   @media (orientation: landscape) and (max-height: 500px) {
     .mobileJoystick { width: 100px; height: 100px; bottom: 15px; }
     .mobileJoystick .stick { width: 46px; height: 46px; }
@@ -583,10 +185,6 @@
     <div class="row">
       <span>🎯 Управление</span>
       <span>Вверх = вверх, вниз = вниз (по карте)</span>
-    </div>
-    <div class="row">
-      <span>⚡ Раунд</span>
-      <span>Новый раунд начинается автоматически</span>
     </div>
   </div>
 
@@ -742,7 +340,6 @@ const Sound = {
     try {
       if (!this.ctx || !this.enabled) return;
       const t = this.ctx.currentTime;
-
       const osc1 = this.ctx.createOscillator();
       osc1.type = 'sine';
       osc1.frequency.setValueAtTime(140, t);
@@ -1019,9 +616,7 @@ const G = {
   lastSyncTime: 0,
   roundTimer: 0,
   roundCountdown: 3,
-  currentMapIndex: -1,
-  // Флаг: гость ждёт карту от хоста
-  waitingForMap: false
+  currentMapIndex: -1
 };
 
 // ===================================================
@@ -1232,6 +827,7 @@ class Tank {
       return;
     }
 
+    // 🎯 Гость НЕ управляет снарядами — только двигает свой танк и отправляет позицию
     let moveVec = { x: 0, y: 0, active: false };
     if (this.isLocalInput) moveVec = Input.getMoveVector(this.id);
 
@@ -1271,6 +867,7 @@ class Tank {
 
     if (this.recoil > 0) this.recoil = Math.max(0, this.recoil - dt * 5);
 
+    // 🎯 Стрельба: и хост, и гость могут стрелять
     if (this.isLocalInput && Input.isFirePressed(this.id)) {
       this.tryShoot();
     }
@@ -1281,13 +878,29 @@ class Tank {
     if (now - this.lastFireTime < FIRE_COOLDOWN) return;
     this.lastFireTime = now;
     this.recoil = 1;
-    fireBulletFrom(this);
 
-    if (G.mode === 'online' && this.id === G.myRole) {
+    // Гость создаёт снаряд локально только для анимации, но НЕ считает попадания
+    // (попадания считает хост)
+    if (G.mode === 'online' && !G.isHost && this.id === G.myRole) {
+      // Гость отправляет выстрел хосту — хост создаст снаряд
       const angle = this.turretAngle;
       const sx = this.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
       const sy = this.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
-      sendMessage({ type: 'shot', x: sx, y: sy, angle });
+      sendMessage({ type: 'shootRequest', x: sx, y: sy, angle, shooter: this.id });
+      Sound.playShoot();
+      vibrate(20);
+      spawnParticles(sx, sy, 'muzzle', this.color.main);
+    } else {
+      // Хост или solo — создаём снаряд сразу
+      fireBulletFrom(this);
+
+      if (G.mode === 'online' && G.isHost) {
+        // Хост синхронизирует создание снаряда с гостем
+        const angle = this.turretAngle;
+        const sx = this.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
+        const sy = this.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
+        sendMessage({ type: 'spawnBullet', x: sx, y: sy, angle, owner: this.id });
+      }
     }
   }
 
@@ -1422,6 +1035,18 @@ function fireBulletFrom(tank) {
   spawnParticles(sx, sy, 'muzzle', tank.color.main);
 }
 
+function createBullet(x, y, angle, owner) {
+  G.bullets.push({
+    x, y,
+    vx: Math.sin(angle) * BULLET_SPEED,
+    vy: -Math.cos(angle) * BULLET_SPEED,
+    owner: owner,
+    bounces: 0,
+    alive: true,
+    trail: []
+  });
+}
+
 function updateBullets(dt) {
   const speedFactor = 60 * dt;
 
@@ -1439,22 +1064,51 @@ function updateBullets(dt) {
       const newX = b.x + stepX;
       const newY = b.y + stepY;
 
-      let hitTank = null;
-      for (const id in G.tanks) {
-        const tank = G.tanks[id];
-        if (!tank.alive || id === b.owner) continue;
-        const dx = tank.x - newX;
-        const dy = tank.y - newY;
-        if (Math.hypot(dx, dy) < TANK_SIZE / 2 + BULLET_SIZE / 2) {
-          hitTank = tank;
+      // 🎯 В онлайне попадания в танки считает ТОЛЬКО ХОСТ
+      const shouldCheckTanks = (G.mode !== 'online') || G.isHost;
+
+      if (shouldCheckTanks) {
+        let hitTank = null;
+        for (const id in G.tanks) {
+          const tank = G.tanks[id];
+          if (!tank.alive || id === b.owner) continue;
+          const dx = tank.x - newX;
+          const dy = tank.y - newY;
+          if (Math.hypot(dx, dy) < TANK_SIZE / 2 + BULLET_SIZE / 2) {
+            hitTank = tank;
+            break;
+          }
+        }
+
+        if (hitTank) {
+          b.alive = false;
+
+          // Урон танку — на хосте
+          hitTank.alive = false;
+          spawnParticles(hitTank.x, hitTank.y, 'bigExplosion');
+          Sound.playExplosion();
+          vibrate([80, 30, 80]);
+
+          // Счёт
+          if (b.owner && G.score[b.owner] !== undefined) {
+            G.score[b.owner]++;
+            updateScoreDisplay();
+          }
+
+          // Отправляем гостю сообщение о смерти + новом счёте
+          if (G.mode === 'online') {
+            sendMessage({
+              type: 'tankDied',
+              tankId: hitTank.id,
+              killer: b.owner,
+              score: G.score
+            });
+          }
+
+          // Запуск перехода раунда на хосте
+          scheduleRoundEnd(b.owner);
           break;
         }
-      }
-
-      if (hitTank) {
-        b.alive = false;
-        killTank(hitTank, b.owner);
-        break;
       }
 
       const col = Math.floor(newX / TILE_SIZE);
@@ -1549,39 +1203,26 @@ function drawBullets(ctx) {
 }
 
 // ===================================================
-// СМЕРТЬ
+// СМЕРТЬ / РАУНД
 // ===================================================
-function killTank(tank, killerId) {
-  if (!tank.alive) return;
-  tank.alive = false;
+let roundEndScheduled = false;
 
-  spawnParticles(tank.x, tank.y, 'bigExplosion');
-  Sound.playExplosion();
-  vibrate([80, 30, 80]);
-
-  if (G.mode === 'online' && tank.id !== G.myRole) {
-    sendMessage({ type: 'hit', killer: G.myRole });
-  }
-
-  if (killerId && G.score[killerId] !== undefined) {
-    G.score[killerId]++;
-    updateScoreDisplay();
-  }
+function scheduleRoundEnd(winnerId) {
+  if (roundEndScheduled) return;
+  roundEndScheduled = true;
 
   setTimeout(() => {
+    roundEndScheduled = false;
     if (G.score.p1 >= G.maxScore) {
       endGame('p1');
     } else if (G.score.p2 >= G.maxScore) {
       endGame('p2');
     } else {
-      startRoundTransition(killerId);
+      startRoundTransition(winnerId);
     }
   }, 900);
 }
 
-// ===================================================
-// ПЕРЕХОД МЕЖДУ РАУНДАМИ
-// ===================================================
 function startRoundTransition(winnerId) {
   G.phase = 'roundWait';
   Sound.stopEngine();
@@ -1645,38 +1286,31 @@ function updateRoundTransition(dt) {
   if (G.roundTimer <= 0) {
     document.getElementById('roundBanner').classList.remove('show');
 
-    // 🎯 ГЛАВНОЕ ИСПРАВЛЕНИЕ:
-    // В онлайне только ХОСТ инициирует новый раунд
-    // Гость ждёт сообщение 'startRound' с картой от хоста
+    // 🎯 Только ХОСТ инициирует новый раунд
     if (G.mode === 'online') {
       if (G.isHost) {
-        // Хост генерирует карту и отправляет её гостю ПЕРЕД стартом
         const mapIndex = Math.floor(Math.random() * MAPS.length);
-        sendMessage({ type: 'startRound', mapIndex: mapIndex, score: G.score });
-        // Сам стартует с этой же картой
+        // Хост загружает карту и стартует
         beginRoundWithMap(mapIndex);
+        // Отправляем гостю команду начать с той же картой
+        sendMessage({ type: 'startRound', mapIndex: mapIndex, score: G.score });
       }
-      // Гость НИЧЕГО не делает — ждёт сообщение 'startRound'
-      // (см. handleNetMessage)
+      // Гость ждёт 'startRound'
     } else {
-      // Solo — просто стартуем
       const mapIndex = Math.floor(Math.random() * MAPS.length);
       beginRoundWithMap(mapIndex);
     }
   }
 }
 
-// ===================================================
-// НАЧАЛО РАУНДА С КОНКРЕТНОЙ КАРТОЙ (одинаковая для обоих)
-// ===================================================
 function beginRoundWithMap(mapIndex) {
   G.phase = 'playing';
   G.bullets = [];
   G.particles = [];
   G.treads = [];
+  roundEndScheduled = false;
 
   loadMap(mapIndex);
-  // Танки создаются заново с ИСХОДНЫХ ПОЗИЦИЙ
   createTanks();
 
   Sound.playRoundStart();
@@ -2014,7 +1648,12 @@ function update(dt, timestamp) {
   if (G.phase === 'playing') {
     if (G.tanks.p1) G.tanks.p1.update(dt);
     if (G.tanks.p2) G.tanks.p2.update(dt);
-    updateBullets(dt);
+
+    // 🎯 Гость НЕ обрабатывает пули у себя — он только отрисовывает
+    // Хост обрабатывает все пули
+    if (G.mode === 'solo' || G.isHost) {
+      updateBullets(dt);
+    }
     updateParticles(dt);
 
     for (const t of G.treads) t.life -= dt * 0.3;
@@ -2033,9 +1672,8 @@ function update(dt, timestamp) {
 
     try {
       if (Sound.enabled && Sound.ctx) {
-        const speedP1 = G.tanks.p1 ? G.tanks.p1.speedFactor : 0;
-        const speedP2 = G.tanks.p2 ? G.tanks.p2.speedFactor : 0;
-        const speed = Math.max(speedP1, speedP2);
+        const myTank = G.mode === 'solo' ? G.tanks.p1 : G.tanks[G.myRole];
+        const speed = myTank ? myTank.speedFactor : 0;
         if (!engineWasPlaying) {
           Sound.startEngine();
           engineWasPlaying = true;
@@ -2044,9 +1682,10 @@ function update(dt, timestamp) {
       }
     } catch(e) {}
 
+    // 🎯 Синхронизация: И хост, И гость отправляют состояние
     if (G.mode === 'online' && G.connected) {
       const now = performance.now();
-      if (now - G.lastSyncTime > 50) {
+      if (now - G.lastSyncTime > 40) {
         G.lastSyncTime = now;
         sendState();
       }
@@ -2121,13 +1760,19 @@ function createRoom() {
       showNotification('🎉 Друг подключился!');
       Sound.playClick();
 
-      // Хост генерирует ПЕРВУЮ карту и отправляет гостю ВМЕСТЕ с командой startRound
-      const mapIndex = Math.floor(Math.random() * MAPS.length);
-
-      // Небольшая задержка чтобы гость был готов принимать
       setTimeout(() => {
         Input.init();
-        startOnlineGameHost(mapIndex);
+        // Хост генерирует первую карту и стартует
+        const mapIndex = Math.floor(Math.random() * MAPS.length);
+        document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
+        document.getElementById('roundBanner').classList.remove('show');
+        G.score = { p1: 0, p2: 0 };
+        updateScoreDisplay();
+        beginRoundWithMap(mapIndex);
+        document.getElementById('name1').textContent = 'ВЫ';
+        document.getElementById('name2').textContent = 'ПРОТИВНИК';
+        // Отправляем гостю команду старта
+        sendMessage({ type: 'startRound', mapIndex: mapIndex, score: G.score });
       }, 800);
     });
   });
@@ -2136,31 +1781,6 @@ function createRoom() {
     if (err.type === 'unavailable-id') createRoom();
     else document.getElementById('waitingText').textContent = '❌ Ошибка: ' + err.type;
   });
-}
-
-function startOnlineGameHost(mapIndex) {
-  document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
-  document.getElementById('roundBanner').classList.remove('show');
-  G.score = { p1: 0, p2: 0 };
-  updateScoreDisplay();
-
-  // Загружаем карту и стартуем
-  loadMap(mapIndex);
-  createTanks();
-  G.bullets = [];
-  G.particles = [];
-  G.treads = [];
-
-  document.getElementById('name1').textContent = 'ВЫ';
-  document.getElementById('name2').textContent = 'ПРОТИВНИК';
-
-  G.phase = 'playing';
-
-  // Отправляем гостю карту — он загрузит ту же самую
-  sendMessage({ type: 'startRound', mapIndex: mapIndex, score: G.score });
-
-  showNotification('🎯 БОЙ!');
-  vibrate(50);
 }
 
 function joinGame() {
@@ -2184,8 +1804,6 @@ function joinGame() {
       failed = false;
       setupConnection();
       showNotification('✅ Подключено!');
-      // Гость ждёт сообщение 'startRound' от хоста — НЕ стартует сам
-      // Но инициализируем input, чтобы к моменту прихода 'startRound' быть готовым
       Input.init();
     });
   });
@@ -2227,6 +1845,7 @@ function sendState() {
   const t = G.tanks[G.myRole];
   sendMessage({
     type: 'state',
+    role: G.myRole,
     x: t.x, y: t.y,
     angle: t.angle, turretAngle: t.turretAngle,
     trackOffset: t.trackOffset,
@@ -2238,7 +1857,8 @@ function sendState() {
 function handleNetMessage(msg) {
   switch (msg.type) {
     case 'state': {
-      const opp = G.myRole === 'p1' ? 'p2' : 'p1';
+      // 🎯 И хост, и гость принимают состояния друг друга
+      const opp = msg.role === 'p1' ? 'p2' : 'p1';
       const o = G.tanks[opp];
       if (o) {
         o.x += (msg.x - o.x) * 0.5;
@@ -2251,18 +1871,30 @@ function handleNetMessage(msg) {
       }
       break;
     }
-    case 'shot': {
-      G.bullets.push({
-        x: msg.x, y: msg.y,
-        vx: Math.sin(msg.angle) * BULLET_SPEED,
-        vy: -Math.cos(msg.angle) * BULLET_SPEED,
-        owner: G.myRole === 'p1' ? 'p2' : 'p1',
-        bounces: 0, alive: true, trail: []
-      });
-      Sound.playShoot();
-      spawnParticles(msg.x, msg.y, 'muzzle');
+
+    // 🎯 Гость просит хоста создать снаряд (гость стреляет)
+    case 'shootRequest': {
+      if (!G.isHost) break;
+      // Хост создаёт снаряд от имени гостя
+      createBullet(msg.x, msg.y, msg.angle, msg.shooter);
+      // Хост оповещает гостя, что снаряд создан (для визуала у гостя)
+      sendMessage({ type: 'spawnBullet', x: msg.x, y: msg.y, angle: msg.angle, owner: msg.shooter });
       break;
     }
+
+    // 🎯 Хост создал снаряд (свой или по просьбе гостя) — гость отображает
+    case 'spawnBullet': {
+      if (G.isHost) break;
+      // Проверяем, чтобы не дублировать
+      const exists = G.bullets.some(b =>
+        Math.abs(b.x - msg.x) < 2 && Math.abs(b.y - msg.y) < 2
+      );
+      if (!exists) {
+        createBullet(msg.x, msg.y, msg.angle, msg.owner);
+      }
+      break;
+    }
+
     case 'wall': {
       G.map[msg.row][msg.col] = CELL_EMPTY;
       G.mapHP[msg.row][msg.col] = 0;
@@ -2274,39 +1906,38 @@ function handleNetMessage(msg) {
       G.mapHP[msg.row][msg.col] = msg.hp;
       break;
     }
-    case 'hit': {
-      const myTank = G.tanks[G.myRole];
-      if (myTank) killTank(myTank, msg.killer);
+
+    // 🎯 Хост сообщает гостю о смерти танка
+    case 'tankDied': {
+      if (G.isHost) break;
+      const tank = G.tanks[msg.tankId];
+      if (tank) {
+        tank.alive = false;
+        spawnParticles(tank.x, tank.y, 'bigExplosion');
+        Sound.playExplosion();
+        vibrate([80, 30, 80]);
+      }
+      // Синхронизируем счёт от хоста
+      G.score = msg.score;
+      updateScoreDisplay();
       break;
     }
-    // 🎯 ГЛАВНОЕ: хост отправляет эту команду когда начинается новый раунд
-    // Гость загружает ТУ ЖЕ карту и запускает раунд
+
+    // 🎯 Хост запускает новый раунд у гостя
     case 'startRound': {
       document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
       document.getElementById('roundBanner').classList.remove('show');
       G.score = msg.score || { p1: 0, p2: 0 };
       updateScoreDisplay();
-
-      G.bullets = [];
-      G.particles = [];
-      G.treads = [];
-      loadMap(msg.mapIndex);
-      createTanks();
-
       document.getElementById('name1').textContent = 'ПРОТИВНИК';
       document.getElementById('name2').textContent = 'ВЫ';
-
-      G.phase = 'playing';
-      Sound.playRoundStart();
-      showNotification('🎯 РАУНД ' + (G.score.p1 + G.score.p2 + 1));
-      vibrate(50);
+      beginRoundWithMap(msg.mapIndex);
       break;
     }
+
     case 'restart': {
-      // Хост перезапустил матч — гость тоже
       G.score = { p1: 0, p2: 0 };
       updateScoreDisplay();
-      // Хост пришлёт startRound отдельно
       break;
     }
   }
@@ -2374,12 +2005,12 @@ function startSoloMode() {
   document.getElementById('roundBanner').classList.remove('show');
   G.score = { p1: 0, p2: 0 };
   updateScoreDisplay();
+  document.getElementById('name1').textContent = 'P1';
+  document.getElementById('name2').textContent = 'P2';
 
   const mapIndex = Math.floor(Math.random() * MAPS.length);
   beginRoundWithMap(mapIndex);
 
-  document.getElementById('name1').textContent = 'P1';
-  document.getElementById('name2').textContent = 'P2';
   Input.init();
 }
 
@@ -2389,14 +2020,12 @@ function restartMatch() {
   G.score = { p1: 0, p2: 0 };
   updateScoreDisplay();
 
-  // В онлайне — хост инициирует, гость ждёт startRound
   if (G.mode === 'online') {
     if (G.isHost) {
       const mapIndex = Math.floor(Math.random() * MAPS.length);
       beginRoundWithMap(mapIndex);
       sendMessage({ type: 'startRound', mapIndex: mapIndex, score: G.score });
     }
-    // Гость — ждёт startRound
   } else {
     const mapIndex = Math.floor(Math.random() * MAPS.length);
     beginRoundWithMap(mapIndex);
