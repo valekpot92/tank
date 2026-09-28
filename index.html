@@ -116,8 +116,6 @@
   }
 
   /* ============ МОБИЛЬНОЕ УПРАВЛЕНИЕ ============ */
-  /* Джойстик и кнопка огня — в РАЗНЫХ УГЛАХ ЭКРАНА */
-
   .mobileJoystick {
     display: none;
     position: fixed;
@@ -169,7 +167,6 @@
   .mobileJoystick .arrow.right { right: 6px;  top: 50%;  transform: translateY(-50%); }
   .mobileJoystick.active .arrow { color: rgba(255,255,255,0.85); }
 
-  /* Кнопка огня — в ПРОТИВОПОЛОЖНОМ углу от джойстика */
   .mobileFireBtn {
     display: none;
     position: fixed;
@@ -191,14 +188,8 @@
     transition: transform 0.08s, box-shadow 0.1s;
     font-weight: bold;
   }
-  /* P1 — джойстик слева → кнопка справа */
-  .mobileFireBtn.p1 {
-    right: 30px;
-  }
-  /* P2 — джойстик справа → кнопка слева */
-  .mobileFireBtn.p2 {
-    left: 30px;
-  }
+  .mobileFireBtn.p1 { right: 30px; }
+  .mobileFireBtn.p2 { left: 30px; }
   .mobileFireBtn:active, .mobileFireBtn.pressed {
     transform: scale(0.9);
     box-shadow:
@@ -411,112 +402,50 @@
   }
   .notification.show { transform: translate(-50%, -50%) scale(1); }
 
-  /* ============ ЭКРАН ОЖИДАНИЯ РАУНДА ============ */
-  .waitingReady {
+  /* ============ ЭКРАН МЕЖДУ РАУНДАМИ ============ */
+  .roundBanner {
     position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(8px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
     z-index: 150;
     text-align: center;
-    padding: 20px;
-    transition: opacity 0.3s;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
-  .waitingReady.hidden { display: none; }
-
-  .waitingReady h2 {
-    font-size: 2em;
-    color: #4fc3f7;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-    font-weight: 700;
+  .roundBanner.show {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
   }
-
-  .waitingReady p {
-    font-size: 1em;
-    color: #a0b8d0;
+  .roundBanner h1 {
+    font-size: 3.5em;
     margin-bottom: 15px;
+    letter-spacing: 4px;
+    font-weight: 800;
+    text-shadow: 0 0 40px currentColor, 0 0 80px currentColor;
+    animation: bannerPulse 0.8s ease-in-out infinite alternate;
   }
-
-  .readyIndicator {
-    display: flex;
-    gap: 20px;
-    margin: 25px 0;
-    flex-wrap: wrap;
-    justify-content: center;
+  @keyframes bannerPulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.05); }
   }
-
-  .readySlot {
-    padding: 15px 25px;
-    border-radius: 15px;
-    border: 3px solid rgba(255,255,255,0.15);
-    background: rgba(0,0,0,0.4);
-    font-size: 1em;
-    font-weight: 700;
-    min-width: 140px;
-    transition: all 0.3s;
+  .roundBanner .subtitle {
+    font-size: 1.2em;
+    color: #a0b8d0;
+    letter-spacing: 2px;
+    font-weight: 600;
   }
-  .readySlot.p1 {
-    color: #4fc3f7;
-    border-color: rgba(79,195,247,0.3);
-  }
-  .readySlot.p2 {
-    color: #ff6b6b;
-    border-color: rgba(255,107,107,0.3);
-  }
-  .readySlot.ready {
-    border-color: #66bb6a;
-    color: #66bb6a;
-    box-shadow: 0 0 25px rgba(102,187,106,0.6);
-    background: rgba(102,187,106,0.15);
-    animation: ready-pulse 1s ease-in-out infinite;
-  }
-  @keyframes ready-pulse {
-    0%,100% { box-shadow: 0 0 25px rgba(102,187,106,0.6); }
-    50% { box-shadow: 0 0 40px rgba(102,187,106,0.9); }
-  }
-
-  .waitingReady .readyBtn {
-    padding: 18px 40px;
-    font-size: 1.1em;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    color: #fff;
-    background: linear-gradient(135deg, #66bb6a, #388e3c);
-    box-shadow: 0 6px 20px rgba(102,187,106,0.5);
-    text-transform: uppercase;
-    font-family: inherit;
-    min-height: 56px;
-    transition: all 0.3s;
-    margin-top: 10px;
-  }
-  .waitingReady .readyBtn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(102,187,106,0.7); }
-  .waitingReady .readyBtn:disabled {
-    background: linear-gradient(135deg, #4a4a4a, #2a2a2a);
-    box-shadow: none;
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-  .waitingReady .readyBtn.ready {
-    background: linear-gradient(135deg, #4a4a4a, #2a2a2a);
-    box-shadow: none;
-    cursor: default;
-    opacity: 0.6;
-  }
-
-  .waitingReady .hint {
-    font-size: 0.85em;
-    color: #7a9cbd;
+  .roundBanner .countdown {
+    font-size: 4em;
+    font-weight: 800;
+    color: #ffd54f;
     margin-top: 20px;
-    max-width: 400px;
-    line-height: 1.5;
+    text-shadow: 0 0 40px rgba(255,213,79,0.9);
+    animation: countPulse 1s ease-in-out infinite;
+  }
+  @keyframes countPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
   }
 
   /* ============ КНОПКА ЗВУКА ============ */
@@ -560,12 +489,10 @@
   body.is-mobile .mobileJoystick { display: block; }
   body.is-mobile .mobileFireBtn { display: flex; }
 
-  /* В онлайн-режиме показываем только один комплект */
   body.is-mobile.online-p1 .mobileJoystick.p2,
   body.is-mobile.online-p1 .mobileFireBtn.p2 { display: none !important; }
   body.is-mobile.online-p2 .mobileJoystick.p1,
   body.is-mobile.online-p2 .mobileFireBtn.p1 { display: none !important; }
-  /* В соло — показываем оба */
 
   @media (max-width: 600px) {
     .topBar { padding: 8px 12px; }
@@ -580,7 +507,8 @@
     .mobileFireBtn { width: 80px; height: 80px; font-size: 1.9em; }
     .controls-info { padding: 15px 20px; }
     .menu-buttons button { flex: 1 1 100%; max-width: 100%; }
-    .readySlot { min-width: 110px; padding: 12px 18px; font-size: 0.9em; }
+    .roundBanner h1 { font-size: 2.2em; }
+    .roundBanner .countdown { font-size: 3em; }
   }
 
   @media (orientation: landscape) and (max-height: 500px) {
@@ -590,6 +518,7 @@
     .topBar { padding: 4px 10px; }
     .player-score { padding: 3px 10px; font-size: 0.75em; }
     .overlay h1 { font-size: 1.5em; }
+    .roundBanner h1 { font-size: 1.8em; }
   }
 </style>
 </head>
@@ -617,7 +546,7 @@
   </div>
 </div>
 
-<!-- Джойстик P1 (левый) -->
+<!-- Джойстики и кнопки огня -->
 <div class="mobileJoystick p1" id="joyLeft">
   <div class="arrow up">▲</div>
   <div class="arrow down">▼</div>
@@ -625,11 +554,8 @@
   <div class="arrow right">▶</div>
   <div class="stick" id="stickLeft"></div>
 </div>
-
-<!-- Кнопка огня P1 (правый угол) -->
 <div class="mobileFireBtn p1" id="fireBtnLeft">💥</div>
 
-<!-- Джойстик P2 (правый) -->
 <div class="mobileJoystick p2" id="joyRight">
   <div class="arrow up">▲</div>
   <div class="arrow down">▼</div>
@@ -637,11 +563,16 @@
   <div class="arrow right">▶</div>
   <div class="stick" id="stickRight"></div>
 </div>
-
-<!-- Кнопка огня P2 (левый угол) -->
 <div class="mobileFireBtn p2" id="fireBtnRight">💥</div>
 
 <div class="notification" id="notification"></div>
+
+<!-- БАННЕР МЕЖДУ РАУНДАМИ -->
+<div class="roundBanner" id="roundBanner">
+  <h1 id="roundBannerTitle">🎯 РАУНД</h1>
+  <div class="subtitle" id="roundBannerSubtitle"></div>
+  <div class="countdown" id="roundBannerCountdown">3</div>
+</div>
 
 <!-- ГЛАВНОЕ МЕНЮ -->
 <div class="overlay" id="menuScreen">
@@ -660,11 +591,15 @@
     </div>
     <div class="row">
       <span>📱 На телефоне</span>
-      <span>Джойстик слева, кнопка 💥 справа</span>
+      <span>Джойстик и кнопка 💥 в разных углах</span>
     </div>
     <div class="row">
       <span>🎯 Управление</span>
       <span>Вверх = вверх, вниз = вниз (по карте)</span>
+    </div>
+    <div class="row">
+      <span>⚡ Раунд</span>
+      <span>Новый раунд начинается автоматически</span>
     </div>
   </div>
 
@@ -701,21 +636,6 @@
   <div id="joinError" style="color:#ff6b6b; margin-top:15px; min-height:24px; font-weight:600;"></div>
   <p style="color:#a0b8d0; font-size:0.9em; margin-top:10px">Вы играете 🔴 <b>красным</b> танком</p>
   <button class="danger" onclick="backToMenu()">← НАЗАД</button>
-</div>
-
-<!-- ЭКРАН ОЖИДАНИЯ РАУНДА -->
-<div class="waitingReady hidden" id="waitingReadyScreen">
-  <h2 id="waitingTitle">Готов к следующему раунду?</h2>
-  <p id="waitingSubtitle">Оба игрока должны нажать кнопку</p>
-
-  <div class="readyIndicator">
-    <div class="readySlot p1" id="readySlot1">🔵 P1</div>
-    <div class="readySlot p2" id="readySlot2">🔴 P2</div>
-  </div>
-
-  <button class="readyBtn" id="readyBtn" onclick="onReadyPressed()">✅ Я ГОТОВ</button>
-
-  <p class="hint">Пока оба не нажмут кнопку — танки не сдвинутся с места</p>
 </div>
 
 <!-- ЭКРАН КОНЦА -->
@@ -840,16 +760,13 @@ const Sound = {
   },
 
   // === НОВЫЙ ЗВУК ВЫСТРЕЛА ===
-  // Глубокий «бум» + металлический лязг (как у настоящей танковой пушки)
   playShoot() {
     this.init();
-
-    // 1. Низкочастотный «бум» выстрела (главный звук)
     try {
       if (!this.ctx || !this.enabled) return;
       const t = this.ctx.currentTime;
 
-      // Глубокий удар
+      // 1. Глубокий удар
       const osc1 = this.ctx.createOscillator();
       osc1.type = 'sine';
       osc1.frequency.setValueAtTime(140, t);
@@ -861,7 +778,7 @@ const Sound = {
       osc1.connect(g1); g1.connect(this.masterGain);
       osc1.start(t); osc1.stop(t + 0.5);
 
-      // 2. Металлический «лязг» — резкий sweep вниз
+      // 2. Металлический лязг
       const osc2 = this.ctx.createOscillator();
       osc2.type = 'sawtooth';
       osc2.frequency.setValueAtTime(2400, t);
@@ -873,7 +790,7 @@ const Sound = {
       osc2.connect(g2); g2.connect(this.masterGain);
       osc2.start(t); osc2.stop(t + 0.2);
 
-      // 3. Шумовой взрыв пороха (bandpass в высоких)
+      // 3. Шум пороха
       const size = Math.floor(this.ctx.sampleRate * 0.28);
       const buf = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
       const dd = buf.getChannelData(0);
@@ -892,7 +809,7 @@ const Sound = {
       src.connect(bf); bf.connect(g3); g3.connect(this.masterGain);
       src.start(t); src.stop(t + 0.3);
 
-      // 4. Короткий «щелчок» в момент выстрела (высокий)
+      // 4. Щелчок
       const osc3 = this.ctx.createOscillator();
       osc3.type = 'square';
       osc3.frequency.setValueAtTime(3200, t);
@@ -990,10 +907,15 @@ const Sound = {
     this.init();
     this.tone(1500, 0.05, 'sine', 0.12);
   },
-  playReady() {
+  playRoundStart() {
     this.init();
-    this.tone(880, 0.15, 'sine', 0.25, 0);
-    this.tone(1320, 0.2, 'sine', 0.25, 0.1);
+    this.tone(660, 0.15, 'sine', 0.3, 0);
+    this.tone(880, 0.15, 'sine', 0.3, 0.12);
+    this.tone(1320, 0.25, 'sine', 0.35, 0.24);
+  },
+  playCountdown() {
+    this.init();
+    this.tone(880, 0.1, 'square', 0.15);
   },
   playRoundWin() {
     this.init();
@@ -1040,18 +962,17 @@ const BULLET_SIZE = 9;
 const BULLET_MAX_BOUNCES = 2;
 const WALL_HP_MAX = 3;
 const FIRE_COOLDOWN = 450;
+const ROUND_DELAY = 2.5;   // секунд между раундами
 
 const CELL_EMPTY = 0;
 const CELL_WALL  = 1;
 const CELL_STEEL = 2;
 
 // ===================================================
-// КАРТЫ (с растительностью)
-// 0 = пусто, 1 = кирпич, 2 = сталь, 3 = куст, 4 = дерево, 5 = трава
-// Растительность — декоративная, НЕ блокирует танки и снаряды
+// КАРТЫ
+// 0=пусто, 1=кирпич, 2=сталь, 3=куст, 4=дерево, 5=трава
 // ===================================================
 const MAPS = [
-  // Карта 1 — «Крест»
   [
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
     [2,4,0,0,3,0,0,0,0,5,0,0,4,0,2],
@@ -1069,7 +990,6 @@ const MAPS = [
     [2,0,0,0,4,0,0,5,0,0,0,0,3,0,2],
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
   ],
-  // Карта 2 — «Лабиринт»
   [
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
     [2,4,0,0,5,0,0,3,0,0,0,0,4,0,2],
@@ -1087,7 +1007,6 @@ const MAPS = [
     [2,4,0,0,0,0,3,0,0,5,0,0,0,0,2],
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
   ],
-  // Карта 3 — «Арена»
   [
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
     [2,0,4,0,5,1,0,0,0,1,0,3,0,4,2],
@@ -1107,21 +1026,14 @@ const MAPS = [
   ]
 ];
 
-// Проверка: является ли клетка растительностью (проходимой)
-function isFoliage(cell) {
-  return cell === 3 || cell === 4 || cell === 5;
-}
-
-// Проверка: блокирует ли клетка движение
-function isBlocking(cell) {
-  return cell === CELL_WALL || cell === CELL_STEEL;
-}
+function isFoliage(cell) { return cell === 3 || cell === 4 || cell === 5; }
+function isBlocking(cell) { return cell === CELL_WALL || cell === CELL_STEEL; }
 
 // ===================================================
 // СОСТОЯНИЕ
 // ===================================================
 const G = {
-  phase: 'menu',       // menu | waiting | playing | waitingReady | roundEnd | gameover | paused
+  phase: 'menu',       // menu | playing | roundWait | gameover | paused
   mode: 'solo',
   myRole: null,
   isHost: false,
@@ -1135,17 +1047,15 @@ const G = {
   bullets: [],
   particles: [],
   treads: [],
+  foliage: [],
   score: { p1: 0, p2: 0 },
   maxScore: 5,
   canvas: null,
   ctx: null,
   lastTime: 0,
   lastSyncTime: 0,
-  // Готовность к раунду
-  readyP1: false,
-  readyP2: false,
-  // Растительность (генерируется вместе с картой)
-  foliage: []
+  roundTimer: 0,           // сколько секунд осталось до нового раунда
+  roundCountdown: 3        // сколько было при старте
 };
 
 // ===================================================
@@ -1254,7 +1164,6 @@ const Input = {
       btn.classList.remove('pressed');
       this[stateKey] = false;
     }, { passive: false });
-    // Для ПК-мыши (тоже работает)
     btn.addEventListener('mousedown', (e) => {
       e.preventDefault();
       btn.classList.add('pressed');
@@ -1265,7 +1174,7 @@ const Input = {
       btn.classList.remove('pressed');
       this[stateKey] = false;
     });
-    btn.addEventListener('mouseleave', (e) => {
+    btn.addEventListener('mouseleave', () => {
       btn.classList.remove('pressed');
       this[stateKey] = false;
     });
@@ -1349,7 +1258,7 @@ class Tank {
   update(dt) {
     if (!this.alive) { this.speedFactor = 0; return; }
 
-    // 🔒 БЛОКИРОВКА ДВИЖЕНИЯ пока раунд не начнётся
+    // 🔒 БЛОКИРОВКА: танки НЕ двигаются пока фаза не playing
     if (G.phase !== 'playing') {
       this.vx = 0;
       this.vy = 0;
@@ -1443,14 +1352,12 @@ class Tank {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Тень
     ctx.save();
     ctx.rotate(this.angle);
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(-TANK_SIZE/2 + 3, -TANK_SIZE/2 + 5, TANK_SIZE, TANK_SIZE);
     ctx.restore();
 
-    // Корпус
     ctx.save();
     ctx.rotate(this.angle);
 
@@ -1491,7 +1398,6 @@ class Tank {
 
     ctx.restore();
 
-    // Башня
     ctx.save();
     ctx.rotate(this.turretAngle);
     ctx.translate(0, recoilOffset);
@@ -1682,7 +1588,7 @@ function drawBullets(ctx) {
 }
 
 // ===================================================
-// СМЕРТЬ
+// СМЕРТЬ + АВТОМАТИЧЕСКИЙ НОВЫЙ РАУНД
 // ===================================================
 function killTank(tank, killerId) {
   if (!tank.alive) return;
@@ -1701,11 +1607,90 @@ function killTank(tank, killerId) {
     updateScoreDisplay();
   }
 
+  // Через 900мс — старт нового раунда или конец игры
   setTimeout(() => {
-    if (G.score.p1 >= G.maxScore) endGame('p1');
-    else if (G.score.p2 >= G.maxScore) endGame('p2');
-    else startRoundWaiting(killerId);
+    if (G.score.p1 >= G.maxScore) {
+      endGame('p1');
+    } else if (G.score.p2 >= G.maxScore) {
+      endGame('p2');
+    } else {
+      // 🎯 АВТОМАТИЧЕСКИЙ ЗАПУСК НОВОГО РАУНДА С ОБРАТНЫМ ОТСЧЁТОМ
+      startRoundTransition(killerId);
+    }
   }, 900);
+}
+
+function startRoundTransition(winnerId) {
+  G.phase = 'roundWait';
+  Sound.stopEngine();
+  engineWasPlaying = false;
+
+  // Показываем баннер
+  const banner = document.getElementById('roundBanner');
+  const title = document.getElementById('roundBannerTitle');
+  const subtitle = document.getElementById('roundBannerSubtitle');
+  const countdownEl = document.getElementById('roundBannerCountdown');
+
+  // Настраиваем заголовок
+  if (G.mode === 'solo') {
+    if (winnerId === 'p1') {
+      title.textContent = '🔵 СИНИЙ ПОБЕДИЛ';
+      title.style.color = '#4fc3f7';
+    } else if (winnerId === 'p2') {
+      title.textContent = '🔴 КРАСНЫЙ ПОБЕДИЛ';
+      title.style.color = '#ff6b6b';
+    } else {
+      title.textContent = '🎯 РАУНД';
+      title.style.color = '#4fc3f7';
+    }
+  } else {
+    const iWon = winnerId === G.myRole;
+    if (iWon) {
+      title.textContent = '🏆 ВЫ ПОБЕДИЛИ!';
+      title.style.color = '#66bb6a';
+      Sound.playRoundWin();
+    } else {
+      title.textContent = '💀 ВЫ ПРОИГРАЛИ';
+      title.style.color = '#ff6b6b';
+      Sound.playRoundLose();
+    }
+  }
+
+  subtitle.textContent = `Счёт: ${G.score.p1} : ${G.score.p2}`;
+
+  // Показываем баннер
+  banner.classList.add('show');
+
+  // Запускаем обратный отсчёт
+  G.roundTimer = ROUND_DELAY;
+  G.roundCountdown = Math.ceil(ROUND_DELAY);
+  countdownEl.textContent = G.roundCountdown;
+
+  // Звук отсчёта
+  Sound.playCountdown();
+}
+
+function updateRoundTransition(dt) {
+  if (G.phase !== 'roundWait') return;
+
+  G.roundTimer -= dt;
+  const countdown = Math.max(0, Math.ceil(G.roundTimer));
+
+  if (countdown !== G.roundCountdown) {
+    G.roundCountdown = countdown;
+    const el = document.getElementById('roundBannerCountdown');
+    if (el) el.textContent = countdown;
+    if (countdown > 0) {
+      Sound.playCountdown();
+      vibrate(30);
+    }
+  }
+
+  if (G.roundTimer <= 0) {
+    // Скрываем баннер и запускаем новый раунд
+    document.getElementById('roundBanner').classList.remove('show');
+    nextRoundLocal();
+  }
 }
 
 // ===================================================
@@ -1774,7 +1759,6 @@ function loadMap(index) {
   G.map = MAPS[index].map(row => row.slice());
   G.mapHP = G.map.map(row => row.map(cell => cell === CELL_WALL ? WALL_HP_MAX : 0));
 
-  // Генерируем позиции растительности для анимации (лёгкое покачивание)
   G.foliage = [];
   for (let r = 0; r < MAP_SIZE; r++) {
     for (let c = 0; c < MAP_SIZE; c++) {
@@ -1782,8 +1766,8 @@ function loadMap(index) {
       if (isFoliage(cell)) {
         G.foliage.push({
           r, c, type: cell,
-          phase: Math.random() * Math.PI * 2,   // фаза покачивания
-          size: 0.85 + Math.random() * 0.3,      // размер
+          phase: Math.random() * Math.PI * 2,
+          size: 0.85 + Math.random() * 0.3,
           offsetX: (Math.random() - 0.5) * 8,
           offsetY: (Math.random() - 0.5) * 8
         });
@@ -1793,7 +1777,6 @@ function loadMap(index) {
 }
 
 function drawMap(ctx, time) {
-  // Пол
   for (let r = 0; r < MAP_SIZE; r++) {
     for (let c = 0; c < MAP_SIZE; c++) {
       const cell = G.map[r][c];
@@ -1822,7 +1805,6 @@ function drawMap(ctx, time) {
     }
   }
 
-  // Следы гусениц
   for (const t of G.treads) {
     ctx.globalAlpha = t.life * 0.4;
     ctx.fillStyle = '#0a0a14';
@@ -1830,7 +1812,6 @@ function drawMap(ctx, time) {
   }
   ctx.globalAlpha = 1;
 
-  // Растительность (поверх пола, но под танками)
   for (const f of G.foliage) {
     drawFoliage(ctx, f, time);
   }
@@ -1845,14 +1826,12 @@ function drawFoliage(ctx, f, time) {
   ctx.translate(x, y);
 
   if (f.type === 3) {
-    // КУСТ — 4-5 кружочков зелёного цвета
     const s = TILE_SIZE * 0.55 * f.size;
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.beginPath();
     ctx.ellipse(2, s * 0.5, s * 0.7, s * 0.25, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Основные кустики
     const bushColors = ['#2d5a2d', '#3a7a3a', '#4a9a4a'];
     for (let i = 0; i < 5; i++) {
       const angle = (i / 5) * Math.PI * 2 + sway * 0.05;
@@ -1864,63 +1843,47 @@ function drawFoliage(ctx, f, time) {
       ctx.arc(bx, by, s * 0.35, 0, Math.PI * 2);
       ctx.fill();
     }
-    // Центральный кустик (светлее)
     ctx.fillStyle = '#5ab05a';
     ctx.beginPath();
     ctx.arc(0, -s * 0.2, s * 0.4, 0, Math.PI * 2);
     ctx.fill();
-    // Блик
     ctx.fillStyle = 'rgba(150,255,150,0.4)';
     ctx.beginPath();
     ctx.arc(-s * 0.15, -s * 0.35, s * 0.15, 0, Math.PI * 2);
     ctx.fill();
-
   } else if (f.type === 4) {
-    // ДЕРЕВО — ствол + крона
     const s = TILE_SIZE * 0.6 * f.size;
-
-    // Тень
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.beginPath();
     ctx.ellipse(3, s * 0.6, s * 0.5, s * 0.18, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Ствол
     ctx.fillStyle = '#4a2e1a';
     ctx.fillRect(-3, 0, 6, s * 0.55);
     ctx.fillStyle = '#6b4423';
     ctx.fillRect(-2, 0, 3, s * 0.55);
 
-    // Крона (несколько слоёв для объёма)
     ctx.fillStyle = '#1e4a1e';
     ctx.beginPath();
     ctx.arc(sway * 0.3, -s * 0.15, s * 0.55, 0, Math.PI * 2);
     ctx.fill();
-
     ctx.fillStyle = '#2d6b2d';
     ctx.beginPath();
     ctx.arc(sway * 0.3, -s * 0.25, s * 0.5, 0, Math.PI * 2);
     ctx.fill();
-
     ctx.fillStyle = '#3d8a3d';
     ctx.beginPath();
     ctx.arc(sway * 0.3 - s * 0.1, -s * 0.35, s * 0.42, 0, Math.PI * 2);
     ctx.fill();
-
-    // Блик
     ctx.fillStyle = 'rgba(120,220,120,0.5)';
     ctx.beginPath();
     ctx.arc(sway * 0.3 - s * 0.15, -s * 0.45, s * 0.15, 0, Math.PI * 2);
     ctx.fill();
-
   } else if (f.type === 5) {
-    // ТРАВА — пучок травинок
     const s = TILE_SIZE * 0.5 * f.size;
     ctx.strokeStyle = '#3d7a3d';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
-
-    // Несколько травинок
     for (let i = 0; i < 5; i++) {
       const offsetX = (i - 2) * 3;
       const height = s * (0.5 + Math.random() * 0.3);
@@ -1930,8 +1893,6 @@ function drawFoliage(ctx, f, time) {
       ctx.quadraticCurveTo(offsetX + swayX * 0.5, 0, offsetX + swayX, -height);
       ctx.stroke();
     }
-
-    // Светлые кончики
     ctx.strokeStyle = '#6ab86a';
     ctx.lineWidth = 1.5;
     for (let i = 0; i < 3; i++) {
@@ -2099,8 +2060,11 @@ function update(dt, timestamp) {
         sendState();
       }
     }
+  } else if (G.phase === 'roundWait') {
+    // Обратный отсчёт до нового раунда
+    updateRoundTransition(dt);
+    updateParticles(dt);
   } else {
-    // В других фазах — обновляем частицы и рисуем, но НЕ двигаем танки
     updateParticles(dt);
     for (const t of G.treads) t.life -= dt * 0.3;
     G.treads = G.treads.filter(t => t.life > 0);
@@ -2300,17 +2264,18 @@ function handleNetMessage(msg) {
       createTanks();
       break;
     }
-    case 'ready': {
-      // Соперник нажал «Готов»
-      if (msg.role === 'p1') { G.readyP1 = true; updateReadySlot('p1', true); }
-      if (msg.role === 'p2') { G.readyP2 = true; updateReadySlot('p2', true); }
-      checkBothReady();
-      break;
-    }
     case 'restart': {
       G.score = { p1: 0, p2: 0 };
       updateScoreDisplay();
-      startRoundWaiting();
+      startRoundTransition(null);
+      break;
+    }
+    case 'newround': {
+      // Синхронизация: соперник тоже начинает новый раунд
+      G.score = msg.score;
+      updateScoreDisplay();
+      document.getElementById('roundBanner').classList.remove('show');
+      nextRoundLocal();
       break;
     }
   }
@@ -2318,7 +2283,7 @@ function handleNetMessage(msg) {
 
 function startOnlineGame() {
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
-  document.getElementById('waitingReadyScreen').classList.add('hidden');
+  document.getElementById('roundBanner').classList.remove('show');
   G.score = { p1: 0, p2: 0 };
   updateScoreDisplay();
 
@@ -2338,98 +2303,9 @@ function startOnlineGame() {
   document.getElementById('name1').textContent = G.myRole === 'p1' ? 'ВЫ' : 'ПРОТИВНИК';
   document.getElementById('name2').textContent = G.myRole === 'p2' ? 'ВЫ' : 'ПРОТИВНИК';
 
-  // Первый раунд — начинаем сразу (без ожидания)
   G.phase = 'playing';
   showNotification('🎯 БОЙ!');
   vibrate(50);
-}
-
-// ===================================================
-// ПАУЗА МЕЖДУ РАУНДАМИ
-// ===================================================
-function startRoundWaiting(winnerId) {
-  G.phase = 'waitingReady';
-  G.readyP1 = false;
-  G.readyP2 = false;
-  Sound.stopEngine();
-  engineWasPlaying = false;
-
-  // Обновляем UI
-  const title = document.getElementById('waitingTitle');
-  const sub = document.getElementById('waitingSubtitle');
-  const btn = document.getElementById('readyBtn');
-  const slot1 = document.getElementById('readySlot1');
-  const slot2 = document.getElementById('readySlot2');
-
-  // Сброс
-  slot1.classList.remove('ready');
-  slot2.classList.remove('ready');
-  slot1.textContent = '🔵 P1';
-  slot2.textContent = '🔴 P2';
-  btn.classList.remove('ready');
-  btn.disabled = false;
-  btn.textContent = '✅ Я ГОТОВ';
-
-  // В solo-режиме оба играют на одном устройстве
-  if (G.mode === 'solo') {
-    title.textContent = '🎯 РАУНД ' + (G.score.p1 + G.score.p2 + 1);
-    sub.textContent = winnerId === 'p1' ? '🔵 Синий танк победил!' : '🔴 Красный танк победил!';
-  } else {
-    const iWon = winnerId === G.myRole;
-    title.textContent = iWon ? '🏆 РАУНД ЗА ВАМИ!' : '💀 РАУНД ЗА СОПЕРНИКОМ';
-    sub.textContent = `Счёт: ${G.score.p1} : ${G.score.p2} — нажмите готов`;
-  }
-
-  document.getElementById('waitingReadyScreen').classList.remove('hidden');
-}
-
-function onReadyPressed() {
-  if (G.phase !== 'waitingReady') return;
-  const btn = document.getElementById('readyBtn');
-  if (btn.disabled || btn.classList.contains('ready')) return;
-
-  btn.disabled = true;
-  btn.classList.add('ready');
-  btn.textContent = '✅ ГОТОВ';
-  Sound.playReady();
-  vibrate(30);
-
-  if (G.mode === 'solo') {
-    // В solo — одна кнопка, означает «оба готовы»
-    G.readyP1 = true;
-    G.readyP2 = true;
-    updateReadySlot('p1', true);
-    updateReadySlot('p2', true);
-    checkBothReady();
-  } else {
-    // Онлайн — отмечаем свою роль и отправляем сопернику
-    if (G.myRole === 'p1') { G.readyP1 = true; updateReadySlot('p1', true); }
-    if (G.myRole === 'p2') { G.readyP2 = true; updateReadySlot('p2', true); }
-    sendMessage({ type: 'ready', role: G.myRole });
-    checkBothReady();
-  }
-}
-
-function updateReadySlot(role, ready) {
-  const slot = document.getElementById(role === 'p1' ? 'readySlot1' : 'readySlot2');
-  if (!slot) return;
-  if (ready) {
-    slot.classList.add('ready');
-    slot.textContent = (role === 'p1' ? '🔵 P1 ✅' : '🔴 P2 ✅');
-  } else {
-    slot.classList.remove('ready');
-    slot.textContent = (role === 'p1' ? '🔵 P1' : '🔴 P2');
-  }
-}
-
-function checkBothReady() {
-  if (G.readyP1 && G.readyP2) {
-    // Оба готовы — начинаем новый раунд
-    setTimeout(() => {
-      document.getElementById('waitingReadyScreen').classList.add('hidden');
-      nextRoundLocal();
-    }, 500);
-  }
 }
 
 // ===================================================
@@ -2465,7 +2341,7 @@ function backToMenu() {
   document.body.classList.remove('online-p1');
   document.body.classList.remove('online-p2');
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
-  document.getElementById('waitingReadyScreen').classList.add('hidden');
+  document.getElementById('roundBanner').classList.remove('show');
   document.getElementById('menuScreen').classList.remove('hidden');
   G.phase = 'menu';
 }
@@ -2490,7 +2366,7 @@ function startSoloMode() {
   document.body.classList.remove('online-p1');
   document.body.classList.remove('online-p2');
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
-  document.getElementById('waitingReadyScreen').classList.add('hidden');
+  document.getElementById('roundBanner').classList.remove('show');
   G.phase = 'playing';
   G.score = { p1: 0, p2: 0 };
   updateScoreDisplay();
@@ -2507,8 +2383,6 @@ function startSoloMode() {
 
 function nextRoundLocal() {
   G.phase = 'playing';
-  G.readyP1 = false;
-  G.readyP2 = false;
   G.bullets = [];
   G.particles = [];
   G.treads = [];
@@ -2519,9 +2393,11 @@ function nextRoundLocal() {
 
   if (G.mode === 'online' && G.isHost) {
     sendMessage({ type: 'map', index: mapIndex });
+    sendMessage({ type: 'newround', score: G.score });
   }
 
-  showNotification('🎯 БОЙ!');
+  Sound.playRoundStart();
+  showNotification('🎯 РАУНД ' + (G.score.p1 + G.score.p2 + 1));
   vibrate(50);
 }
 
@@ -2530,8 +2406,12 @@ function restartMatch() {
   document.getElementById('gameoverScreen').classList.add('hidden');
   G.score = { p1: 0, p2: 0 };
   updateScoreDisplay();
-  startRoundWaiting(null);
-  if (G.mode === 'online') sendMessage({ type: 'restart' });
+
+  if (G.mode === 'online') {
+    sendMessage({ type: 'restart' });
+  }
+
+  startRoundTransition(null);
 }
 
 function endGame(winnerId) {
