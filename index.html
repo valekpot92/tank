@@ -172,7 +172,7 @@
 
 <script>
 // ===================================================
-// WEBRTC
+// WebRTC конфиг
 // ===================================================
 const ICE_SERVERS = {
   iceServers: [
@@ -190,25 +190,20 @@ const DeviceInfo = (function() {
   const isMobileUA = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop|Mobile/i.test(ua);
   const isSmallScreen = window.innerWidth <= 900;
   const isMobile = (isMobileUA || (isTouch && isSmallScreen));
-  const supportsVibrate = 'vibrate' in navigator;
-  return { isMobile, isTouch, isSmallScreen, supportsVibrate };
+  return { isMobile, isTouch, isSmallScreen, supportsVibrate: 'vibrate' in navigator };
 })();
 
 if (DeviceInfo.isMobile) document.body.classList.add('is-mobile');
 if (DeviceInfo.isTouch) document.body.classList.add('is-touch');
 
-function vibrate(pattern) {
-  if (!DeviceInfo.supportsVibrate) return;
-  if (!Sound.enabled) return;
-  try { navigator.vibrate(pattern); } catch(e) {}
-}
+function vibrate(p) { if (DeviceInfo.supportsVibrate && Sound.enabled) try { navigator.vibrate(p); } catch(e){} }
 
 // ===================================================
 // ЗВУК
 // ===================================================
 const Sound = {
   ctx: null, enabled: true, masterGain: null,
-  engineGain: null, engineOsc: null, engineOsc2: null, engineFilter: null, enginePlaying: false,
+  engineGain: null, engineOsc: null, engineOsc2: null, enginePlaying: false,
 
   init() {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
@@ -220,40 +215,34 @@ const Sound = {
     } catch (e) { this.enabled = false; }
   },
 
-  tone(freq, duration, type = 'sine', volume = 0.3, delay = 0) {
+  tone(freq, dur, type='sine', vol=0.3, delay=0) {
     try {
       if (!this.enabled || !this.ctx) return;
       const t = this.ctx.currentTime + delay;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, t);
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(volume, t + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-      osc.connect(gain); gain.connect(this.masterGain);
-      osc.start(t); osc.stop(t + duration + 0.05);
-    } catch(e) {}
+      const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(this.masterGain);
+      o.start(t); o.stop(t + dur + 0.05);
+    } catch(e){}
   },
-
-  sweep(f1, f2, dur, type = 'sine', vol = 0.3, delay = 0) {
+  sweep(f1, f2, dur, type='sine', vol=0.3, delay=0) {
     try {
       if (!this.enabled || !this.ctx) return;
       const t = this.ctx.currentTime + delay;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(f1, t);
-      osc.frequency.exponentialRampToValueAtTime(Math.max(f2, 1), t + dur);
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(vol, t + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      osc.connect(gain); gain.connect(this.masterGain);
-      osc.start(t); osc.stop(t + dur + 0.05);
-    } catch(e) {}
+      const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f1, t);
+      o.frequency.exponentialRampToValueAtTime(Math.max(f2, 1), t + dur);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(this.masterGain);
+      o.start(t); o.stop(t + dur + 0.05);
+    } catch(e){}
   },
-
-  noise(dur, vol = 0.3, freq = 1000, delay = 0, type = 'lowpass', Q = 1) {
+  noise(dur, vol=0.3, freq=1000, delay=0, type='lowpass') {
     try {
       if (!this.enabled || !this.ctx) return;
       const t = this.ctx.currentTime + delay;
@@ -261,82 +250,50 @@ const Sound = {
       const buf = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
       const d = buf.getChannelData(0);
       for (let i = 0; i < size; i++) d[i] = Math.random() * 2 - 1;
-      const src = this.ctx.createBufferSource();
-      src.buffer = buf;
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = type;
-      filter.frequency.setValueAtTime(freq, t);
-      filter.Q.value = Q;
-      const gain = this.ctx.createGain();
-      gain.gain.setValueAtTime(vol, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      src.connect(filter); filter.connect(gain); gain.connect(this.masterGain);
-      src.start(t); src.stop(t + dur);
-    } catch(e) {}
+      const s = this.ctx.createBufferSource(); s.buffer = buf;
+      const f = this.ctx.createBiquadFilter(); f.type = type; f.frequency.setValueAtTime(freq, t);
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      s.connect(f); f.connect(g); g.connect(this.masterGain);
+      s.start(t); s.stop(t + dur);
+    } catch(e){}
   },
 
   playShoot() {
     this.init();
+    if (!this.ctx) return;
     try {
-      if (!this.ctx || !this.enabled) return;
       const t = this.ctx.currentTime;
-      const osc1 = this.ctx.createOscillator();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(140, t);
-      osc1.frequency.exponentialRampToValueAtTime(28, t + 0.35);
+      const o1 = this.ctx.createOscillator(); o1.type = 'sine';
+      o1.frequency.setValueAtTime(140, t); o1.frequency.exponentialRampToValueAtTime(28, t + 0.35);
       const g1 = this.ctx.createGain();
-      g1.gain.setValueAtTime(0, t);
-      g1.gain.linearRampToValueAtTime(0.75, t + 0.005);
+      g1.gain.setValueAtTime(0, t); g1.gain.linearRampToValueAtTime(0.6, t + 0.005);
       g1.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-      osc1.connect(g1); g1.connect(this.masterGain);
-      osc1.start(t); osc1.stop(t + 0.5);
-      const osc2 = this.ctx.createOscillator();
-      osc2.type = 'sawtooth';
-      osc2.frequency.setValueAtTime(2400, t);
-      osc2.frequency.exponentialRampToValueAtTime(180, t + 0.12);
-      const g2 = this.ctx.createGain();
-      g2.gain.setValueAtTime(0, t);
-      g2.gain.linearRampToValueAtTime(0.32, t + 0.003);
-      g2.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-      osc2.connect(g2); g2.connect(this.masterGain);
-      osc2.start(t); osc2.stop(t + 0.2);
-    } catch(e) {}
+      o1.connect(g1); g1.connect(this.masterGain); o1.start(t); o1.stop(t + 0.5);
+    } catch(e){}
   },
-
   startEngine() {
     try {
       if (!this.enabled || !this.ctx || this.enginePlaying) return;
       this.enginePlaying = true;
-      this.engineOsc = this.ctx.createOscillator();
-      this.engineOsc.type = 'sawtooth';
-      this.engineOsc.frequency.value = 55;
-      this.engineOsc2 = this.ctx.createOscillator();
-      this.engineOsc2.type = 'square';
-      this.engineOsc2.frequency.value = 28;
-      this.engineFilter = this.ctx.createBiquadFilter();
-      this.engineFilter.type = 'lowpass';
-      this.engineFilter.frequency.value = 400;
-      this.engineGain = this.ctx.createGain();
-      this.engineGain.gain.value = 0.05;
-      this.engineOsc.connect(this.engineFilter);
-      this.engineOsc2.connect(this.engineFilter);
-      this.engineFilter.connect(this.engineGain);
+      this.engineOsc = this.ctx.createOscillator(); this.engineOsc.type = 'sawtooth'; this.engineOsc.frequency.value = 55;
+      this.engineOsc2 = this.ctx.createOscillator(); this.engineOsc2.type = 'square'; this.engineOsc2.frequency.value = 28;
+      this.engineGain = this.ctx.createGain(); this.engineGain.gain.value = 0;
+      this.engineOsc.connect(this.engineGain); this.engineOsc2.connect(this.engineGain);
       this.engineGain.connect(this.masterGain);
-      this.engineOsc.start();
-      this.engineOsc2.start();
-    } catch(e) { this.enginePlaying = false; }
+      this.engineOsc.start(); this.engineOsc2.start();
+    } catch(e){ this.enginePlaying = false; }
   },
-
   updateEngine(speed) {
     try {
-      if (!this.enabled || !this.ctx || !this.engineGain || !this.engineOsc) return;
+      if (!this.engineGain || !this.engineOsc) return;
       const t = this.ctx.currentTime;
-      this.engineGain.gain.setValueAtTime(0.04 + speed * 0.14, t);
+      this.engineGain.gain.setValueAtTime(0.04 + speed * 0.12, t);
       this.engineOsc.frequency.setValueAtTime(45 + speed * 55, t);
       if (this.engineOsc2) this.engineOsc2.frequency.setValueAtTime(25 + speed * 30, t);
-    } catch(e) {}
+    } catch(e){}
   },
-
   stopEngine() {
     if (!this.enginePlaying) return;
     this.enginePlaying = false;
@@ -344,42 +301,30 @@ const Sound = {
     setTimeout(() => {
       try { this.engineOsc && this.engineOsc.stop(); } catch(e){}
       try { this.engineOsc2 && this.engineOsc2.stop(); } catch(e){}
-      this.engineOsc = null; this.engineOsc2 = null;
-      this.engineGain = null; this.engineFilter = null;
+      this.engineOsc = null; this.engineOsc2 = null; this.engineGain = null;
     }, 200);
   },
-
   playExplosion() {
     this.init();
     this.tone(55, 0.7, 'sine', 0.6, 0);
     this.tone(38, 0.9, 'sine', 0.5, 0.03);
-    this.noise(0.55, 0.45, 700, 0, 'lowpass', 1.5);
-    this.noise(0.35, 0.3, 2500, 0.05, 'highpass', 0.5);
-    this.sweep(1800, 80, 0.35, 'square', 0.2);
+    this.noise(0.5, 0.4, 700, 0, 'lowpass');
   },
-  playWallHit() {
-    this.init();
-    this.tone(200, 0.1, 'square', 0.18);
-    this.noise(0.1, 0.18, 1200, 0, 'bandpass', 0.8);
-  },
-  playBounce() {
-    this.init();
-    this.tone(1300, 0.06, 'sine', 0.18);
-    this.sweep(1500, 800, 0.1, 'sine', 0.12);
-  },
+  playWallHit() { this.init(); this.tone(200, 0.1, 'square', 0.18); },
+  playBounce() { this.init(); this.tone(1300, 0.06, 'sine', 0.18); },
   playClick() { this.init(); this.tone(1500, 0.05, 'sine', 0.12); },
-  playRoundStart() { this.init(); this.tone(660, 0.15, 'sine', 0.3, 0); this.tone(880, 0.15, 'sine', 0.3, 0.12); this.tone(1320, 0.25, 'sine', 0.35, 0.24); },
+  playRoundStart() { this.init(); this.tone(660, 0.15, 'sine', 0.3, 0); this.tone(880, 0.15, 'sine', 0.3, 0.12); },
   playCountdown() { this.init(); this.tone(880, 0.1, 'square', 0.15); },
   playRoundWin() { this.init(); [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.tone(f, 0.35, 'triangle', 0.35, i * 0.1)); },
   playRoundLose() { this.init(); [523.25, 415.3, 349.23].forEach((f, i) => this.tone(f, 0.4, 'triangle', 0.3, i * 0.15)); },
-  playVictory() { this.init(); [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => this.tone(f, 0.4, 'triangle', 0.4, i * 0.15)); this.tone(1567.98, 1.2, 'sine', 0.35, 0.8); }
+  playVictory() { this.init(); [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => this.tone(f, 0.4, 'triangle', 0.4, i * 0.15)); }
 };
 
 function toggleSound() {
   Sound.init();
   Sound.enabled = !Sound.enabled;
   const btn = document.getElementById('soundBtn');
-  if (Sound.enabled) { btn.textContent = '🔊'; btn.classList.remove('muted'); Sound.playClick(); if (G.phase === 'playing') Sound.startEngine(); }
+  if (Sound.enabled) { btn.textContent = '🔊'; btn.classList.remove('muted'); Sound.playClick(); }
   else { btn.textContent = '🔇'; btn.classList.add('muted'); Sound.stopEngine(); }
 }
 document.addEventListener('click', () => Sound.init(), { once: true });
@@ -396,7 +341,7 @@ const BULLET_SPEED = 5.5;
 const BULLET_SIZE = 9;
 const BULLET_MAX_BOUNCES = 2;
 const WALL_HP_MAX = 3;
-const FIRE_COOLDOWN = 450;
+const FIRE_COOLDOWN = 400;
 const ROUND_DELAY = 3;
 
 const TANK_START = {
@@ -404,9 +349,7 @@ const TANK_START = {
   p2: { x: CANVAS_SIZE - TILE_SIZE * 1.5, y: CANVAS_SIZE - TILE_SIZE * 1.5, angle: -Math.PI * 3 / 4 }
 };
 
-const CELL_EMPTY = 0;
-const CELL_WALL  = 1;
-const CELL_STEEL = 2;
+const CELL_EMPTY = 0, CELL_WALL = 1, CELL_STEEL = 2;
 
 const MAPS = [
   [
@@ -420,8 +363,8 @@ const MAPS = [
   ]
 ];
 
-function isFoliage(cell) { return cell === 3 || cell === 4 || cell === 5; }
-function isBlocking(cell) { return cell === CELL_WALL || cell === CELL_STEEL; }
+function isFoliage(c) { return c === 3 || c === 4 || c === 5; }
+function isBlocking(c) { return c === CELL_WALL || c === CELL_STEEL; }
 
 // ===================================================
 // СОСТОЯНИЕ
@@ -448,12 +391,9 @@ const G = {
   ctx: null,
   lastTime: 0,
   lastSyncSent: 0,
-  lastInputSent: 0,
   roundTimer: 0,
   roundCountdown: 3,
-  currentMapIndex: 0,
-  myLastFireTime: 0,
-  remoteFirePressed: false
+  roundEndPending: false
 };
 
 // ===================================================
@@ -471,9 +411,7 @@ const Input = {
       this.keys[e.key.toLowerCase()] = true;
       if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
     });
-    document.addEventListener('keyup', (e) => {
-      this.keys[e.key.toLowerCase()] = false;
-    });
+    document.addEventListener('keyup', (e) => { this.keys[e.key.toLowerCase()] = false; });
 
     if (DeviceInfo.isTouch) {
       if (G.mode === 'solo') {
@@ -498,8 +436,7 @@ const Input = {
       const rect = joy.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      let dx = t.clientX - cx;
-      let dy = t.clientY - cy;
+      let dx = t.clientX - cx, dy = t.clientY - cy;
       const dist = Math.hypot(dx, dy);
       if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
       state.x = dx / maxDist;
@@ -541,19 +478,10 @@ const Input = {
       return { x, y };
     }
 
-    const keys = this.keys;
+    const k = this.keys;
     let vx = 0, vy = 0;
-    if (tankId === 'p1') {
-      if (keys['w']) vy -= 1;
-      if (keys['s']) vy += 1;
-      if (keys['a']) vx -= 1;
-      if (keys['d']) vx += 1;
-    } else if (tankId === 'p2') {
-      if (keys['arrowup']) vy -= 1;
-      if (keys['arrowdown']) vy += 1;
-      if (keys['arrowleft']) vx -= 1;
-      if (keys['arrowright']) vx += 1;
-    }
+    if (tankId === 'p1') { if (k['w']) vy -= 1; if (k['s']) vy += 1; if (k['a']) vx -= 1; if (k['d']) vx += 1; }
+    else if (tankId === 'p2') { if (k['arrowup']) vy -= 1; if (k['arrowdown']) vy += 1; if (k['arrowleft']) vx -= 1; if (k['arrowright']) vx += 1; }
     const mag = Math.hypot(vx, vy);
     if (mag > 1) { vx /= mag; vy /= mag; }
     return { x: vx, y: vy };
@@ -580,10 +508,8 @@ const Input = {
 class Tank {
   constructor(id, x, y, angle, color, isLocalInput) {
     this.id = id;
-    this.x = x;
-    this.y = y;
-    this.angle = angle;
-    this.turretAngle = angle;
+    this.x = x; this.y = y;
+    this.angle = angle; this.turretAngle = angle;
     this.color = color;
     this.isLocalInput = isLocalInput;
     this.alive = true;
@@ -593,31 +519,24 @@ class Tank {
     this.recoil = 0;
   }
 
-  // Применить ввод (своему танку — реальный, чужому — из сети)
-  applyInput(dt, moveVec, firePressed) {
-    if (!this.alive || G.phase !== 'playing') {
-      this.speedFactor = Math.max(0, this.speedFactor - dt * 3);
-      return;
-    }
+  // Обновление локального танка (управляется вводом)
+  updateLocal(dt, moveVec, firePressed) {
+    if (!this.alive || G.phase !== 'playing') { this.speedFactor = Math.max(0, this.speedFactor - dt * 3); return; }
 
     if (moveVec.x !== 0 || moveVec.y !== 0) {
       const dx = moveVec.x * TANK_SPEED;
       const dy = moveVec.y * TANK_SPEED;
-
       const newX = this.x + dx;
       const newY = this.y + dy;
 
       let moved = false;
       if (!this.collides(newX, this.y)) { this.x = newX; moved = true; }
       if (!this.collides(this.x, newY)) { this.y = newY; moved = true; }
+      if (moved) { this.trackOffset += 0.3; this.speedFactor = Math.min(1, this.speedFactor + dt * 3); }
 
-      if (moved) {
-        this.trackOffset += 0.3;
-        this.speedFactor = Math.min(1, this.speedFactor + dt * 3);
-      }
-
-      const targetAngle = Math.atan2(moveVec.x, -moveVec.y);
-      let diff = targetAngle - this.angle;
+      // Плавный поворот
+      const target = Math.atan2(moveVec.x, -moveVec.y);
+      let diff = target - this.angle;
       while (diff > Math.PI) diff -= 2 * Math.PI;
       while (diff < -Math.PI) diff += 2 * Math.PI;
       this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.15);
@@ -635,12 +554,10 @@ class Tank {
     if (firePressed) this.tryShoot();
   }
 
-  // Установить состояние из сети
-  setState(x, y, angle, turretAngle, alive, recoil, trackOffset) {
-    this.x = x;
-    this.y = y;
-    this.angle = angle;
-    this.turretAngle = turretAngle;
+  // Прямая установка координат из сети (без инерции)
+  applyNetworkState(x, y, angle, turretAngle, alive, recoil, trackOffset) {
+    this.x = x; this.y = y;
+    this.angle = angle; this.turretAngle = turretAngle;
     this.alive = alive;
     this.recoil = recoil || 0;
     this.trackOffset = trackOffset || 0;
@@ -656,7 +573,7 @@ class Tank {
     const sx = this.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
     const sy = this.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
 
-    // 🎯 СОЗДАЁМ СНАРЯД ЛОКАЛЬНО у того, кто стреляет
+    // Создаём снаряд локально
     G.bullets.push({
       x: sx, y: sy,
       vx: Math.sin(angle) * BULLET_SPEED,
@@ -671,22 +588,17 @@ class Tank {
     vibrate(20);
     spawnParticles(sx, sy, 'muzzle', this.color.main);
 
-    // 🎯 В онлайне сообщаем сопернику о выстреле
+    // Отправляем сопернику
     if (G.mode === 'online') {
-      sendMessage({
-        type: 'bullet',
-        x: sx, y: sy, angle,
-        owner: this.id
-      });
+      sendMessage({ type: 'bullet', x: sx, y: sy, angle: angle, owner: this.id });
     }
   }
 
   collides(x, y) {
     const half = TANK_SIZE / 2 - 2;
-    const corners = [[x - half, y - half], [x + half, y - half], [x - half, y + half], [x + half, y + half]];
+    const corners = [[x-half, y-half], [x+half, y-half], [x-half, y+half], [x+half, y+half]];
     for (const [cx, cy] of corners) {
-      const col = Math.floor(cx / TILE_SIZE);
-      const row = Math.floor(cy / TILE_SIZE);
+      const col = Math.floor(cx / TILE_SIZE), row = Math.floor(cy / TILE_SIZE);
       if (row < 0 || row >= MAP_SIZE || col < 0 || col >= MAP_SIZE) return true;
       if (isBlocking(G.map[row][col])) return true;
     }
@@ -695,30 +607,25 @@ class Tank {
 
   draw(ctx) {
     if (!this.alive) return;
-    const recoilOffset = this.recoil * 3;
-
+    const ro = this.recoil * 3;
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    ctx.save();
-    ctx.rotate(this.angle);
+    ctx.save(); ctx.rotate(this.angle);
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(-TANK_SIZE/2 + 3, -TANK_SIZE/2 + 5, TANK_SIZE, TANK_SIZE);
     ctx.restore();
 
-    ctx.save();
-    ctx.rotate(this.angle);
+    ctx.save(); ctx.rotate(this.angle);
     ctx.fillStyle = '#0d0d0d';
     ctx.fillRect(-TANK_SIZE/2, -TANK_SIZE/2, 8, TANK_SIZE);
     ctx.fillRect(TANK_SIZE/2 - 8, -TANK_SIZE/2, 8, TANK_SIZE);
-
     ctx.fillStyle = '#2a2a2a';
-    const segOffset = (this.trackOffset % 8);
+    const so = (this.trackOffset % 8);
     for (let i = -TANK_SIZE/2; i < TANK_SIZE/2 - 3; i += 8) {
-      ctx.fillRect(-TANK_SIZE/2 + 1, i + segOffset, 6, 4);
-      ctx.fillRect(TANK_SIZE/2 - 7, i + segOffset, 6, 4);
+      ctx.fillRect(-TANK_SIZE/2 + 1, i + so, 6, 4);
+      ctx.fillRect(TANK_SIZE/2 - 7, i + so, 6, 4);
     }
-
     const grad = ctx.createLinearGradient(-TANK_SIZE/2, -TANK_SIZE/2, TANK_SIZE/2, TANK_SIZE/2);
     grad.addColorStop(0, this.color.light);
     grad.addColorStop(0.35, this.color.main);
@@ -726,48 +633,23 @@ class Tank {
     grad.addColorStop(1, this.color.dark);
     ctx.fillStyle = grad;
     ctx.fillRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, TANK_SIZE - 8);
-
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, 3);
-
-    ctx.strokeStyle = this.color.dark;
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, TANK_SIZE - 8);
     ctx.restore();
 
-    ctx.save();
-    ctx.rotate(this.turretAngle);
-    ctx.translate(0, recoilOffset);
-
-    const turretGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, 14);
-    turretGrad.addColorStop(0, this.color.light);
-    turretGrad.addColorStop(0.5, this.color.main);
-    turretGrad.addColorStop(1, this.color.dark);
-    ctx.fillStyle = turretGrad;
-    ctx.beginPath();
-    ctx.arc(0, 0, 11, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = this.color.dark;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
+    ctx.save(); ctx.rotate(this.turretAngle); ctx.translate(0, ro);
+    const tg = ctx.createRadialGradient(-4, -4, 2, 0, 0, 14);
+    tg.addColorStop(0, this.color.light);
+    tg.addColorStop(0.5, this.color.main);
+    tg.addColorStop(1, this.color.dark);
+    ctx.fillStyle = tg;
+    ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = this.color.dark; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.beginPath();
-    ctx.arc(-3, -3, 5, 0, Math.PI * 2);
-    ctx.fill();
-
-    const barrelGrad = ctx.createLinearGradient(-3, 0, 3, 0);
-    barrelGrad.addColorStop(0, this.color.dark);
-    barrelGrad.addColorStop(0.5, this.color.main);
-    barrelGrad.addColorStop(1, this.color.dark);
-    ctx.fillStyle = barrelGrad;
-    ctx.fillRect(-3, -TANK_SIZE/2 - 8, 6, TANK_SIZE/2 + 8);
-
+    ctx.beginPath(); ctx.arc(-3, -3, 5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = this.color.dark;
+    ctx.fillRect(-3, -TANK_SIZE/2 - 8, 6, TANK_SIZE/2 + 8);
     ctx.fillRect(-5, -TANK_SIZE/2 - 2, 10, 9);
-    ctx.fillStyle = this.color.light;
-    ctx.fillRect(-4, -TANK_SIZE/2 + 8, 8, 2);
-
     ctx.restore();
     ctx.restore();
   }
@@ -777,75 +659,58 @@ class Tank {
 // ПУЛИ
 // ===================================================
 function updateBullets(dt) {
-  const speedFactor = 60 * dt;
+  const sf = 60 * dt;
 
   for (const b of G.bullets) {
     if (!b.alive) continue;
-
     b.trail.push({ x: b.x, y: b.y });
     if (b.trail.length > 10) b.trail.shift();
 
     const steps = 4;
     for (let s = 0; s < steps; s++) {
       if (!b.alive) break;
-      const stepX = b.vx * speedFactor / steps;
-      const stepY = b.vy * speedFactor / steps;
+      const stepX = b.vx * sf / steps;
+      const stepY = b.vy * sf / steps;
       const newX = b.x + stepX;
       const newY = b.y + stepY;
 
-      // 🎯 Проверка попадания в танк — только ХОСТ или solo
-      if (G.mode === 'solo' || G.isHost) {
-        let hitTank = null;
-        for (const id in G.tanks) {
-          const tank = G.tanks[id];
-          if (!tank.alive || id === b.owner) continue;
-          const dx = tank.x - newX;
-          const dy = tank.y - newY;
-          if (Math.hypot(dx, dy) < TANK_SIZE / 2 + BULLET_SIZE / 2) {
-            hitTank = tank;
-            break;
-          }
-        }
-
-        if (hitTank) {
-          b.alive = false;
-          // Хост обрабатывает смерть и рассылает
-          if (G.mode === 'online') {
-            sendMessage({ type: 'tankDied', tankId: hitTank.id, killer: b.owner });
-          }
-          killTankLocal(hitTank, b.owner);
-          break;
-        }
+      // Проверка попадания в ЧУЖОЙ танк
+      let hitTank = null;
+      for (const id in G.tanks) {
+        const t = G.tanks[id];
+        if (!t.alive || id === b.owner) continue;
+        const dx = t.x - newX, dy = t.y - newY;
+        if (Math.hypot(dx, dy) < TANK_SIZE / 2 + BULLET_SIZE / 2) { hitTank = t; break; }
       }
 
-      // Проверка стен — у ВСЕХ
-      const col = Math.floor(newX / TILE_SIZE);
-      const row = Math.floor(newY / TILE_SIZE);
-
-      if (row < 0 || row >= MAP_SIZE || col < 0 || col >= MAP_SIZE) {
+      if (hitTank) {
         b.alive = false;
+
+        // Убиваем локально
+        killTank(hitTank.id, b.owner);
+
+        // Отправляем результат сопернику
+        if (G.mode === 'online') {
+          sendMessage({ type: 'tankKilled', tankId: hitTank.id, killer: b.owner, score: G.score });
+        }
         break;
       }
+
+      const col = Math.floor(newX / TILE_SIZE);
+      const row = Math.floor(newY / TILE_SIZE);
+      if (row < 0 || row >= MAP_SIZE || col < 0 || col >= MAP_SIZE) { b.alive = false; break; }
 
       const cell = G.map[row][col];
       if (cell === CELL_STEEL) {
         b.bounces++;
-        if (b.bounces > BULLET_MAX_BOUNCES) {
-          b.alive = false;
-          spawnParticles(b.x, b.y, 'spark');
-          Sound.playBounce();
-          break;
-        }
-        const cellX = col * TILE_SIZE;
-        const cellY = row * TILE_SIZE;
-        const relX = newX - cellX;
-        const relY = newY - cellY;
-        const dl = relX, dr = TILE_SIZE - relX, dt2 = relY, db = TILE_SIZE - relY;
-        const minD = Math.min(dl, dr, dt2, db);
-        if (minD === dl || minD === dr) b.vx = -b.vx;
+        if (b.bounces > BULLET_MAX_BOUNCES) { b.alive = false; spawnParticles(b.x, b.y, 'spark'); Sound.playBounce(); break; }
+        const cellX = col * TILE_SIZE, cellY = row * TILE_SIZE;
+        const relX = newX - cellX, relY = newY - cellY;
+        const dl = relX, dr = TILE_SIZE - relX, dtp = relY, db = TILE_SIZE - relY;
+        const md = Math.min(dl, dr, dtp, db);
+        if (md === dl || md === dr) b.vx = -b.vx;
         else b.vy = -b.vy;
-        b.x += b.vx * 0.5;
-        b.y += b.vy * 0.5;
+        b.x += b.vx * 0.5; b.y += b.vy * 0.5;
         Sound.playBounce();
         spawnParticles(b.x, b.y, 'spark');
         break;
@@ -853,20 +718,17 @@ function updateBullets(dt) {
         G.mapHP[row][col]--;
         spawnParticles(b.x, b.y, 'debris');
         Sound.playWallHit();
-
         if (G.mapHP[row][col] <= 0) {
           G.map[row][col] = CELL_EMPTY;
           Sound.playExplosion();
           spawnParticles(col * TILE_SIZE + TILE_SIZE/2, row * TILE_SIZE + TILE_SIZE/2, 'explosion');
           if (G.mode === 'online') sendMessage({ type: 'wall', row, col });
         }
-
         b.alive = false;
         break;
       }
 
-      b.x = newX;
-      b.y = newY;
+      b.x = newX; b.y = newY;
     }
   }
 
@@ -880,36 +742,26 @@ function drawBullets(ctx) {
       const a = (i / b.trail.length) * 0.5;
       const size = BULLET_SIZE / 2 * (i / b.trail.length);
       ctx.fillStyle = `rgba(255,200,50,${a})`;
-      ctx.beginPath();
-      ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(t.x, t.y, size, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.shadowColor = '#ffaa00';
-    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 20;
     const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, BULLET_SIZE);
-    grad.addColorStop(0, '#ffffaa');
-    grad.addColorStop(0.4, '#ffdd00');
-    grad.addColorStop(0.8, '#ff8800');
-    grad.addColorStop(1, 'rgba(255,68,0,0.2)');
+    grad.addColorStop(0, '#ffffaa'); grad.addColorStop(0.4, '#ffdd00');
+    grad.addColorStop(0.8, '#ff8800'); grad.addColorStop(1, 'rgba(255,68,0,0.2)');
     ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, BULLET_SIZE / 2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(b.x, b.y, BULLET_SIZE / 2, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, BULLET_SIZE / 4, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(b.x, b.y, BULLET_SIZE / 4, 0, Math.PI * 2); ctx.fill();
     ctx.shadowBlur = 0;
   }
 }
 
 // ===================================================
-// СМЕРТЬ ТАНКА
+// УБИЙСТВО
 // ===================================================
-let roundEndPending = false;
-
-function killTankLocal(tank, killerId) {
-  if (!tank.alive) return;
+function killTank(tankId, killerId) {
+  const tank = G.tanks[tankId];
+  if (!tank || !tank.alive) return;
   tank.alive = false;
 
   spawnParticles(tank.x, tank.y, 'bigExplosion');
@@ -921,10 +773,10 @@ function killTankLocal(tank, killerId) {
     updateScoreDisplay();
   }
 
-  if (!roundEndPending) {
-    roundEndPending = true;
+  if (!G.roundEndPending) {
+    G.roundEndPending = true;
     setTimeout(() => {
-      roundEndPending = false;
+      G.roundEndPending = false;
       if (G.score.p1 >= G.maxScore) endGame('p1');
       else if (G.score.p2 >= G.maxScore) endGame('p2');
       else startRoundTransition(killerId);
@@ -943,7 +795,7 @@ function startRoundTransition(winnerId) {
   const banner = document.getElementById('roundBanner');
   const title = document.getElementById('roundBannerTitle');
   const subtitle = document.getElementById('roundBannerSubtitle');
-  const countdownEl = document.getElementById('roundBannerCountdown');
+  const cdEl = document.getElementById('roundBannerCountdown');
 
   if (G.mode === 'solo') {
     if (winnerId === 'p1') { title.textContent = '🔵 СИНИЙ ПОБЕДИЛ'; title.style.color = '#4fc3f7'; }
@@ -960,7 +812,7 @@ function startRoundTransition(winnerId) {
 
   G.roundTimer = ROUND_DELAY;
   G.roundCountdown = Math.ceil(ROUND_DELAY);
-  countdownEl.textContent = G.roundCountdown;
+  cdEl.textContent = G.roundCountdown;
   Sound.playCountdown();
 }
 
@@ -978,23 +830,23 @@ function updateRoundTransition(dt) {
     document.getElementById('roundBanner').classList.remove('show');
     if (G.mode === 'online') {
       if (G.isHost) {
-        const mapIndex = Math.floor(Math.random() * MAPS.length);
-        sendMessage({ type: 'startRound', mapIndex, score: G.score });
-        beginRoundWithMap(mapIndex);
+        const mi = Math.floor(Math.random() * MAPS.length);
+        sendMessage({ type: 'startRound', mapIndex: mi, score: G.score });
+        beginRound(mi);
       }
     } else {
-      const mapIndex = Math.floor(Math.random() * MAPS.length);
-      beginRoundWithMap(mapIndex);
+      const mi = Math.floor(Math.random() * MAPS.length);
+      beginRound(mi);
     }
   }
 }
 
-function beginRoundWithMap(mapIndex) {
+function beginRound(mapIndex) {
   G.phase = 'playing';
   G.bullets = [];
   G.particles = [];
   G.treads = [];
-  roundEndPending = false;
+  G.roundEndPending = false;
   loadMap(mapIndex);
   createTanks();
   Sound.playRoundStart();
@@ -1016,13 +868,12 @@ function spawnParticles(x, y, type, colorOverride = null) {
   }[type] || ['#fff'];
 
   for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = type === 'bigExplosion' ? 2 + Math.random() * 4 : 0.5 + Math.random() * 2.5;
+    const a = Math.random() * Math.PI * 2;
+    const sp = type === 'bigExplosion' ? 2 + Math.random() * 4 : 0.5 + Math.random() * 2.5;
     const life = type === 'bigExplosion' ? 1.8 : 0.9;
-    let color = colorOverride && Math.random() < 0.5 ? colorOverride : palette[Math.floor(Math.random() * palette.length)];
+    const color = colorOverride && Math.random() < 0.5 ? colorOverride : palette[Math.floor(Math.random() * palette.length)];
     G.particles.push({
-      x, y,
-      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 0.5,
+      x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.5,
       life, maxLife: life,
       size: type === 'bigExplosion' ? 4 + Math.random() * 6 : 2 + Math.random() * 3,
       color, rotation: Math.random() * Math.PI * 2, spin: (Math.random() - 0.5) * 0.3
@@ -1041,14 +892,12 @@ function updateParticles(dt) {
 
 function drawParticles(ctx) {
   for (const p of G.particles) {
-    const alpha = Math.min(1, p.life / p.maxLife * 2);
-    ctx.globalAlpha = alpha;
+    const a = Math.min(1, p.life / p.maxLife * 2);
+    ctx.globalAlpha = a;
     ctx.fillStyle = p.color;
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.rotation);
-    const size = p.size * (0.4 + alpha * 0.6);
-    ctx.fillRect(-size/2, -size/2, size, size);
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rotation);
+    const s = p.size * (0.4 + a * 0.6);
+    ctx.fillRect(-s/2, -s/2, s, s);
     ctx.restore();
   }
   ctx.globalAlpha = 1;
@@ -1058,16 +907,14 @@ function drawParticles(ctx) {
 // КАРТА
 // ===================================================
 function loadMap(index) {
-  G.currentMapIndex = index;
-  G.map = MAPS[index].map(row => row.slice());
-  G.mapHP = G.map.map(row => row.map(cell => cell === CELL_WALL ? WALL_HP_MAX : 0));
+  G.map = MAPS[index].map(r => r.slice());
+  G.mapHP = G.map.map(r => r.map(c => c === CELL_WALL ? WALL_HP_MAX : 0));
   G.foliage = [];
   for (let r = 0; r < MAP_SIZE; r++) {
     for (let c = 0; c < MAP_SIZE; c++) {
-      const cell = G.map[r][c];
-      if (isFoliage(cell)) {
+      if (isFoliage(G.map[r][c])) {
         G.foliage.push({
-          r, c, type: cell,
+          r, c, type: G.map[r][c],
           phase: Math.random() * Math.PI * 2,
           size: 0.85 + Math.random() * 0.3,
           offsetX: (Math.random() - 0.5) * 8,
@@ -1082,16 +929,13 @@ function drawMap(ctx, time) {
   for (let r = 0; r < MAP_SIZE; r++) {
     for (let c = 0; c < MAP_SIZE; c++) {
       const cell = G.map[r][c];
-      const x = c * TILE_SIZE;
-      const y = r * TILE_SIZE;
+      const x = c * TILE_SIZE, y = r * TILE_SIZE;
       if (cell === CELL_EMPTY || isFoliage(cell)) {
         const grad = ctx.createLinearGradient(x, y, x + TILE_SIZE, y + TILE_SIZE);
         if ((r + c) % 2 === 0) { grad.addColorStop(0, '#1e2438'); grad.addColorStop(1, '#181d30'); }
         else { grad.addColorStop(0, '#181d30'); grad.addColorStop(1, '#13182a'); }
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        ctx.strokeStyle = 'rgba(79,195,247,0.06)';
-        ctx.lineWidth = 1;
+        ctx.fillStyle = grad; ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+        ctx.strokeStyle = 'rgba(79,195,247,0.06)'; ctx.lineWidth = 1;
         ctx.strokeRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
       } else if (cell === CELL_WALL) drawWall(ctx, x, y, G.mapHP[r][c], false);
       else if (cell === CELL_STEEL) drawWall(ctx, x, y, 0, true);
@@ -1107,46 +951,37 @@ function drawMap(ctx, time) {
 }
 
 function drawFoliage(ctx, f, time) {
-  const x = f.c * TILE_SIZE + TILE_SIZE / 2 + f.offsetX;
-  const y = f.r * TILE_SIZE + TILE_SIZE / 2 + f.offsetY;
+  const x = f.c * TILE_SIZE + TILE_SIZE/2 + f.offsetX;
+  const y = f.r * TILE_SIZE + TILE_SIZE/2 + f.offsetY;
   const sway = Math.sin(time * 0.001 + f.phase) * 2;
-  ctx.save();
-  ctx.translate(x, y);
+  ctx.save(); ctx.translate(x, y);
 
   if (f.type === 3) {
     const s = TILE_SIZE * 0.55 * f.size;
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.beginPath(); ctx.ellipse(2, s * 0.5, s * 0.7, s * 0.25, 0, 0, Math.PI * 2); ctx.fill();
-    const bushColors = ['#2d5a2d', '#3a7a3a', '#4a9a4a'];
+    ctx.beginPath(); ctx.ellipse(2, s*0.5, s*0.7, s*0.25, 0, 0, Math.PI*2); ctx.fill();
+    const bc = ['#2d5a2d', '#3a7a3a', '#4a9a4a'];
     for (let i = 0; i < 5; i++) {
-      const angle = (i / 5) * Math.PI * 2 + sway * 0.05;
-      const dist = s * 0.35;
-      const bx = Math.cos(angle) * dist;
-      const by = Math.sin(angle) * dist * 0.6 - s * 0.15;
-      ctx.fillStyle = bushColors[i % 3];
-      ctx.beginPath(); ctx.arc(bx, by, s * 0.35, 0, Math.PI * 2); ctx.fill();
+      const a = (i/5)*Math.PI*2 + sway*0.05;
+      const d = s*0.35;
+      ctx.fillStyle = bc[i % 3];
+      ctx.beginPath(); ctx.arc(Math.cos(a)*d, Math.sin(a)*d*0.6 - s*0.15, s*0.35, 0, Math.PI*2); ctx.fill();
     }
     ctx.fillStyle = '#5ab05a';
-    ctx.beginPath(); ctx.arc(0, -s * 0.2, s * 0.4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = 'rgba(150,255,150,0.4)';
-    ctx.beginPath(); ctx.arc(-s * 0.15, -s * 0.35, s * 0.15, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -s*0.2, s*0.4, 0, Math.PI*2); ctx.fill();
   } else if (f.type === 4) {
     const s = TILE_SIZE * 0.6 * f.size;
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.beginPath(); ctx.ellipse(3, s * 0.6, s * 0.5, s * 0.18, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#4a2e1a'; ctx.fillRect(-3, 0, 6, s * 0.55);
-    ctx.fillStyle = '#6b4423'; ctx.fillRect(-2, 0, 3, s * 0.55);
-    ctx.fillStyle = '#1e4a1e'; ctx.beginPath(); ctx.arc(sway * 0.3, -s * 0.15, s * 0.55, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#2d6b2d'; ctx.beginPath(); ctx.arc(sway * 0.3, -s * 0.25, s * 0.5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#3d8a3d'; ctx.beginPath(); ctx.arc(sway * 0.3 - s * 0.1, -s * 0.35, s * 0.42, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#4a2e1a'; ctx.fillRect(-3, 0, 6, s*0.55);
+    ctx.fillStyle = '#1e4a1e'; ctx.beginPath(); ctx.arc(sway*0.3, -s*0.15, s*0.55, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#3d8a3d'; ctx.beginPath(); ctx.arc(sway*0.3 - s*0.1, -s*0.35, s*0.42, 0, Math.PI*2); ctx.fill();
   } else if (f.type === 5) {
     const s = TILE_SIZE * 0.5 * f.size;
     ctx.strokeStyle = '#3d7a3d'; ctx.lineWidth = 2; ctx.lineCap = 'round';
     for (let i = 0; i < 5; i++) {
-      const offsetX = (i - 2) * 3;
-      const height = s * (0.5 + Math.random() * 0.3);
-      const swayX = sway * (0.5 + i * 0.15);
-      ctx.beginPath(); ctx.moveTo(offsetX, s * 0.3); ctx.quadraticCurveTo(offsetX + swayX * 0.5, 0, offsetX + swayX, -height); ctx.stroke();
+      const ox = (i - 2) * 3;
+      const h = s * (0.5 + Math.random() * 0.3);
+      const sx = sway * (0.5 + i * 0.15);
+      ctx.beginPath(); ctx.moveTo(ox, s*0.3); ctx.quadraticCurveTo(ox + sx*0.5, 0, ox + sx, -h); ctx.stroke();
     }
   }
   ctx.restore();
@@ -1158,37 +993,25 @@ function drawWall(ctx, x, y, hp, isSteel) {
 
   if (isSteel) {
     const grad = ctx.createLinearGradient(x, y, x + TILE_SIZE, y + TILE_SIZE);
-    grad.addColorStop(0, '#8a9aaa'); grad.addColorStop(0.3, '#6a7a8a'); grad.addColorStop(0.7, '#4a5a6a'); grad.addColorStop(1, '#2a3a4a');
+    grad.addColorStop(0, '#8a9aaa'); grad.addColorStop(0.5, '#5a6a7a'); grad.addColorStop(1, '#2a3a4a');
     ctx.fillStyle = grad; ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
     ctx.fillStyle = '#1a2a3a';
     for (const [dx, dy] of [[8,8], [TILE_SIZE-11,8], [8,TILE_SIZE-11], [TILE_SIZE-11,TILE_SIZE-11]]) {
-      ctx.beginPath(); ctx.arc(x + dx, y + dy, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x+dx, y+dy, 3, 0, Math.PI*2); ctx.fill();
     }
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, 3);
   } else {
     const damage = 1 - (hp / WALL_HP_MAX);
     const rr = Math.round(200 - damage * 100), gg = Math.round(130 - damage * 70), bb = Math.round(60 - damage * 40);
     const grad = ctx.createLinearGradient(x, y, x, y + TILE_SIZE);
     grad.addColorStop(0, `rgb(${rr},${gg},${bb})`);
-    grad.addColorStop(0.5, `rgb(${Math.max(rr-30,0)},${Math.max(gg-20,0)},${Math.max(bb-15,0)})`);
     grad.addColorStop(1, `rgb(${Math.max(rr-70,0)},${Math.max(gg-50,0)},${Math.max(bb-30,0)})`);
     ctx.fillStyle = grad; ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
     ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1.8;
     for (let i = 1; i < 4; i++) {
-      ctx.beginPath(); ctx.moveTo(x, y + i * TILE_SIZE / 4); ctx.lineTo(x + TILE_SIZE, y + i * TILE_SIZE / 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, y + i*TILE_SIZE/4); ctx.lineTo(x + TILE_SIZE, y + i*TILE_SIZE/4); ctx.stroke();
     }
-    for (let row = 0; row < 4; row++) {
-      const offset = (row % 2) * TILE_SIZE / 4;
-      for (let col = 0; col <= 2; col++) {
-        const cx = x + offset + col * TILE_SIZE / 2;
-        if (cx > x + 1 && cx < x + TILE_SIZE - 1) {
-          ctx.beginPath(); ctx.moveTo(cx, y + row * TILE_SIZE / 4); ctx.lineTo(cx, y + (row + 1) * TILE_SIZE / 4); ctx.stroke();
-        }
-      }
-    }
-    ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, 2);
   }
+
   ctx.strokeStyle = isSteel ? 'rgba(20,30,40,0.9)' : 'rgba(60,30,10,0.9)';
   ctx.lineWidth = 1.5;
   ctx.strokeRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
@@ -1217,25 +1040,22 @@ let engineWasPlaying = false;
 function gameLoop(timestamp) {
   const dt = Math.min((timestamp - G.lastTime) / 1000, 0.1);
   G.lastTime = timestamp;
-  update(dt, timestamp);
+  update(dt);
   render(timestamp);
   requestAnimationFrame(gameLoop);
 }
 
-function update(dt, timestamp) {
+function update(dt) {
   if (G.phase === 'playing') {
+    // Обновляем локальные танки
     if (G.mode === 'solo') {
-      // В solo оба танка управляются локально
-      G.tanks.p1.applyInput(dt, Input.getMoveVector('p1'), Input.isFirePressed('p1'));
-      G.tanks.p2.applyInput(dt, Input.getMoveVector('p2'), Input.isFirePressed('p2'));
+      G.tanks.p1.updateLocal(dt, Input.getMoveVector('p1'), Input.isFirePressed('p1'));
+      G.tanks.p2.updateLocal(dt, Input.getMoveVector('p2'), Input.isFirePressed('p2'));
     } else {
-      // В онлайне свой танк — реальный ввод
       const myTank = G.tanks[G.myRole];
-      const mv = Input.getMoveVector(G.myRole);
-      const fire = Input.isFirePressed(G.myRole);
-      myTank.applyInput(dt, mv, fire);
+      myTank.updateLocal(dt, Input.getMoveVector(G.myRole), Input.isFirePressed(G.myRole));
 
-      // 🎯 Отправляем свою позицию и выстрелы ~30 раз/сек
+      // Отправляем позицию сопернику 30 раз в секунду
       const now = performance.now();
       if (now - G.lastSyncSent > 33) {
         G.lastSyncSent = now;
@@ -1243,20 +1063,17 @@ function update(dt, timestamp) {
           type: 'sync',
           role: G.myRole,
           x: myTank.x, y: myTank.y,
-          angle: myTank.angle, turretAngle: myTank.turretAngle,
-          alive: myTank.alive, recoil: myTank.recoil,
-          trackOffset: myTank.trackOffset
+          a: myTank.angle, ta: myTank.turretAngle,
+          al: myTank.alive, r: myTank.recoil, to: myTank.trackOffset
         });
       }
-
-      // Чужой танк в онлайне НЕ управляется вводом — только по сети
-      // (его состояние обновляется в handleNetMessage)
     }
 
-    // Все пули обрабатываем локально у обоих — но смерть считает только хост
+    // Пули — обрабатываем ЛОКАЛЬНО у обоих
     updateBullets(dt);
     updateParticles(dt);
 
+    // Следы гусениц
     for (const t of G.treads) t.life -= dt * 0.3;
     G.treads = G.treads.filter(t => t.life > 0);
 
@@ -1265,12 +1082,13 @@ function update(dt, timestamp) {
         const t = G.tanks[id];
         if (!t || !t.alive || !t.isLocalInput) continue;
         if (t.speedFactor > 0.4 && Math.random() < 0.5) {
-          G.treads.push({ x: t.x - Math.sin(t.angle) * 10, y: t.y + Math.cos(t.angle) * 10, life: 1 });
-          G.treads.push({ x: t.x + Math.sin(t.angle) * 10, y: t.y - Math.cos(t.angle) * 10, life: 1 });
+          G.treads.push({ x: t.x - Math.sin(t.angle)*10, y: t.y + Math.cos(t.angle)*10, life: 1 });
+          G.treads.push({ x: t.x + Math.sin(t.angle)*10, y: t.y - Math.cos(t.angle)*10, life: 1 });
         }
       }
     } catch(e) {}
 
+    // Звук двигателя
     try {
       if (Sound.enabled && Sound.ctx) {
         const myT = G.mode === 'solo' ? G.tanks.p1 : G.tanks[G.myRole];
@@ -1294,10 +1112,8 @@ function render(timestamp) {
   const ctx = G.ctx;
   if (!ctx) return;
   const bgGrad = ctx.createLinearGradient(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-  bgGrad.addColorStop(0, '#0f1420');
-  bgGrad.addColorStop(1, '#0a0e18');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+  bgGrad.addColorStop(0, '#0f1420'); bgGrad.addColorStop(1, '#0a0e18');
+  ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
   if (G.map && G.map.length > 0) drawMap(ctx, timestamp);
   if (G.tanks.p1) G.tanks.p1.draw(ctx);
   if (G.tanks.p2) G.tanks.p2.draw(ctx);
@@ -1330,9 +1146,7 @@ function createRoom() {
 
   G.peer = new Peer('tanks-' + G.roomCode, { debug: 1, config: ICE_SERVERS });
 
-  G.peer.on('open', () => {
-    document.getElementById('waitingText').textContent = '⏳ Ожидание друга...';
-  });
+  G.peer.on('open', () => { document.getElementById('waitingText').textContent = '⏳ Ожидание друга...'; });
 
   G.peer.on('connection', (conn) => {
     if (G.conn && G.conn.open) { conn.close(); return; }
@@ -1350,9 +1164,9 @@ function createRoom() {
         updateScoreDisplay();
         document.getElementById('name1').textContent = 'ВЫ';
         document.getElementById('name2').textContent = 'ПРОТИВНИК';
-        const mapIndex = Math.floor(Math.random() * MAPS.length);
-        sendMessage({ type: 'startRound', mapIndex, score: G.score });
-        beginRoundWithMap(mapIndex);
+        const mi = Math.floor(Math.random() * MAPS.length);
+        sendMessage({ type: 'startRound', mapIndex: mi, score: G.score });
+        beginRound(mi);
       }, 800);
     });
   });
@@ -1421,83 +1235,57 @@ function sendMessage(msg) {
 
 function handleNetMessage(msg) {
   switch (msg.type) {
-    // 🎯 ПОЛУЧАЕМ ПОЗИЦИЮ СОПЕРНИКА — обновляем его танк
+    // 🎯 Получили позицию соперника — сразу ставим её его танку
     case 'sync': {
       const oppId = msg.role === 'p1' ? 'p2' : 'p1';
       const opp = G.tanks[oppId];
-      if (!opp) break;
-
-      // Плавная интерполяция
-      opp.x = opp.x + (msg.x - opp.x) * 0.6;
-      opp.y = opp.y + (msg.y - opp.y) * 0.6;
-      opp.angle = msg.angle;
-      opp.turretAngle = msg.turretAngle;
-      opp.alive = msg.alive;
-      opp.recoil = msg.recoil || 0;
-      opp.trackOffset = msg.trackOffset || 0;
-
-      // Синхронизируем speedFactor для звука
-      opp.speedFactor = Math.min(1, opp.speedFactor + 0.05);
+      if (!opp) return;
+      opp.applyNetworkState(msg.x, msg.y, msg.a, msg.ta, msg.al, msg.r, msg.to);
       break;
     }
 
-    // 🎯 ПОЛУЧАЕМ ВЫСТРЕЛ СОПЕРНИКА — создаём снаряд у себя
+    // 🎯 Соперник выстрелил — создаём снаряд у себя
     case 'bullet': {
-      // Проверяем на дубликат (маловероятно, но на всякий случай)
-      const near = G.bullets.some(b =>
-        Math.abs(b.x - msg.x) < 5 && Math.abs(b.y - msg.y) < 5
-      );
-      if (!near) {
-        G.bullets.push({
-          x: msg.x, y: msg.y,
-          vx: Math.sin(msg.angle) * BULLET_SPEED,
-          vy: -Math.cos(msg.angle) * BULLET_SPEED,
-          owner: msg.owner,
-          bounces: 0,
-          alive: true,
-          trail: []
-        });
-      }
+      G.bullets.push({
+        x: msg.x, y: msg.y,
+        vx: Math.sin(msg.angle) * BULLET_SPEED,
+        vy: -Math.cos(msg.angle) * BULLET_SPEED,
+        owner: msg.owner,
+        bounces: 0,
+        alive: true,
+        trail: []
+      });
       Sound.playShoot();
       spawnParticles(msg.x, msg.y, 'muzzle');
+      break;
+    }
+
+    // 🎯 Соперник попал в МОЙ танк — я должен умереть у себя
+    // (по факту мы получим это, но у нас уже локально умер танк при попадании)
+    // Но на всякий случай обработаем
+    case 'tankKilled': {
+      const deadTank = G.tanks[msg.tankId];
+      if (deadTank && deadTank.alive) {
+        killTank(msg.tankId, msg.killer);
+      } else {
+        // Обновим счёт, если у нас не обновился
+        if (msg.score) {
+          G.score = msg.score;
+          updateScoreDisplay();
+        }
+      }
       break;
     }
 
     case 'wall': {
       G.map[msg.row][msg.col] = CELL_EMPTY;
       G.mapHP[msg.row][msg.col] = 0;
-      spawnParticles(msg.col * TILE_SIZE + TILE_SIZE/2, msg.row * TILE_SIZE + TILE_SIZE/2, 'explosion');
+      spawnParticles(msg.col*TILE_SIZE + TILE_SIZE/2, msg.row*TILE_SIZE + TILE_SIZE/2, 'explosion');
       Sound.playExplosion();
       break;
     }
 
-    // 🎯 ХОСТ сообщает: танк убит. Обновляем счёт и локально убиваем танк
-    case 'tankDied': {
-      const deadTank = G.tanks[msg.tankId];
-      if (deadTank && deadTank.alive) {
-        deadTank.alive = false;
-        spawnParticles(deadTank.x, deadTank.y, 'bigExplosion');
-        Sound.playExplosion();
-        vibrate([80, 30, 80]);
-      }
-
-      G.score = msg.score;
-      updateScoreDisplay();
-
-      // Запускаем визуальную задержку и переход раунда
-      if (!roundEndPending) {
-        roundEndPending = true;
-        setTimeout(() => {
-          roundEndPending = false;
-          if (G.score.p1 >= G.maxScore) endGame('p1');
-          else if (G.score.p2 >= G.maxScore) endGame('p2');
-          else startRoundTransition(msg.killer);
-        }, 900);
-      }
-      break;
-    }
-
-    // 🎯 Старт нового раунда
+    // 🎯 Хост начал новый раунд
     case 'startRound': {
       document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
       document.getElementById('roundBanner').classList.remove('show');
@@ -1505,7 +1293,7 @@ function handleNetMessage(msg) {
       updateScoreDisplay();
       document.getElementById('name1').textContent = 'ПРОТИВНИК';
       document.getElementById('name2').textContent = 'ВЫ';
-      beginRoundWithMap(msg.mapIndex);
+      beginRound(msg.mapIndex);
       break;
     }
   }
@@ -1541,8 +1329,7 @@ function backToMenu() {
   G.peer = null; G.conn = null; G.connected = false;
   G.mode = 'solo';
   G.myRole = null;
-  document.body.classList.remove('online-p1');
-  document.body.classList.remove('online-p2');
+  document.body.classList.remove('online-p1', 'online-p2');
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   document.getElementById('roundBanner').classList.remove('show');
   document.getElementById('menuScreen').classList.remove('hidden');
@@ -1573,8 +1360,8 @@ function startSoloMode() {
   updateScoreDisplay();
   document.getElementById('name1').textContent = 'P1';
   document.getElementById('name2').textContent = 'P2';
-  const mapIndex = Math.floor(Math.random() * MAPS.length);
-  beginRoundWithMap(mapIndex);
+  const mi = Math.floor(Math.random() * MAPS.length);
+  beginRound(mi);
   Input.init();
 }
 
@@ -1583,16 +1370,15 @@ function restartMatch() {
   document.getElementById('gameoverScreen').classList.add('hidden');
   G.score = { p1: 0, p2: 0 };
   updateScoreDisplay();
-
   if (G.mode === 'online') {
     if (G.isHost) {
-      const mapIndex = Math.floor(Math.random() * MAPS.length);
-      sendMessage({ type: 'startRound', mapIndex, score: G.score });
-      beginRoundWithMap(mapIndex);
+      const mi = Math.floor(Math.random() * MAPS.length);
+      sendMessage({ type: 'startRound', mapIndex: mi, score: G.score });
+      beginRound(mi);
     }
   } else {
-    const mapIndex = Math.floor(Math.random() * MAPS.length);
-    beginRoundWithMap(mapIndex);
+    const mi = Math.floor(Math.random() * MAPS.length);
+    beginRound(mi);
   }
 }
 
@@ -1600,9 +1386,7 @@ function endGame(winnerId) {
   G.phase = 'gameover';
   Sound.stopEngine();
   engineWasPlaying = false;
-
-  let title = '🏆 КОНЕЦ';
-  let text = '';
+  let title = '🏆 КОНЕЦ', text = '';
   if (G.mode === 'solo') {
     title = winnerId === 'p1' ? '🔵 P1 ПОБЕДИЛ!' : '🔴 P2 ПОБЕДИЛ!';
     text = `Финальный счёт: ${G.score.p1} : ${G.score.p2}`;
@@ -1635,8 +1419,8 @@ function showNotification(text) {
 
 function resizeCanvas() {
   const wrap = document.getElementById('canvasWrap');
-  const wrapRect = wrap.getBoundingClientRect();
-  const size = Math.min(wrapRect.width, wrapRect.height) - 20;
+  const r = wrap.getBoundingClientRect();
+  const size = Math.min(r.width, r.height) - 20;
   G.canvas.width = CANVAS_SIZE;
   G.canvas.height = CANVAS_SIZE;
   G.canvas.style.width = size + 'px';
