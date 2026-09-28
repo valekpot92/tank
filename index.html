@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#1a1a2e">
+<meta name="theme-color" content="#0a0e1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>🎮 Танчики — онлайн</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -12,135 +12,219 @@
 
   html, body {
     width: 100%; height: 100%; overflow: hidden;
-    background: #0a0e1a; color: #fff;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #050810;
+    color: #fff;
+    font-family: 'Segoe UI', 'SF Pro Display', Tahoma, sans-serif;
     touch-action: none;
   }
 
+  /* ============ ФОН С АНИМАЦИЕЙ ============ */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(79,195,247,0.12) 0%, transparent 45%),
+      radial-gradient(circle at 80% 90%, rgba(255,107,107,0.10) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(255,213,79,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+    animation: bgShift 20s ease-in-out infinite;
+  }
+  @keyframes bgShift {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ============ КОНТЕЙНЕР ============ */
   #gameWrap {
     position: fixed; inset: 0;
     display: flex; flex-direction: column; overflow: hidden;
+    z-index: 1;
   }
 
   /* ============ ВЕРХНЯЯ ПАНЕЛЬ ============ */
   .topBar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 16px;
-    background: linear-gradient(180deg, rgba(20,25,45,0.95), rgba(15,20,38,0.85));
-    border-bottom: 2px solid rgba(79,195,247,0.3);
-    z-index: 10; gap: 12px; flex-wrap: wrap;
-    padding-top: calc(8px + env(safe-area-inset-top));
+    padding: 10px 20px;
+    background: linear-gradient(180deg, rgba(15,20,40,0.95), rgba(10,14,30,0.75));
+    border-bottom: 1px solid rgba(79,195,247,0.2);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    z-index: 10;
+    gap: 12px;
+    backdrop-filter: blur(20px);
+    padding-top: calc(10px + env(safe-area-inset-top));
+    position: relative;
+  }
+  .topBar::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(79,195,247,0.5), transparent);
   }
 
   .player-score {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 14px; border-radius: 10px;
-    background: rgba(0,0,0,0.3); border: 2px solid;
-    transition: all 0.3s ease; font-size: 0.9em;
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 18px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    position: relative;
+    backdrop-filter: blur(10px);
   }
-  .player-score.p1 { border-color: #4fc3f7; color: #4fc3f7; }
-  .player-score.p2 { border-color: #ff6b6b; color: #ff6b6b; }
-  .player-score .label { font-weight: bold; letter-spacing: 1px; }
+  .player-score.p1 {
+    border-color: rgba(79,195,247,0.6);
+    color: #4fc3f7;
+    box-shadow: 0 0 20px rgba(79,195,247,0.25), inset 0 0 15px rgba(79,195,247,0.08);
+  }
+  .player-score.p2 {
+    border-color: rgba(255,107,107,0.6);
+    color: #ff6b6b;
+    box-shadow: 0 0 20px rgba(255,107,107,0.25), inset 0 0 15px rgba(255,107,107,0.08);
+  }
+  .player-score .label { font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85em; }
   .player-score .score {
-    font-size: 1.4em; font-weight: bold;
+    font-size: 1.5em; font-weight: 800;
     color: #fff; font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 15px currentColor;
+    line-height: 1;
   }
 
   .round-info { text-align: center; flex: 1; min-width: 100px; }
   .round-info .round-label {
-    font-size: 0.75em; color: #b0d4e8;
-    letter-spacing: 2px; text-transform: uppercase;
+    font-size: 0.65em; color: #7a9cbd;
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 2px;
   }
   .round-info .round-value {
-    font-size: 1.2em; font-weight: bold; color: #ffd54f;
+    font-size: 1.1em; font-weight: 700;
+    color: #ffd54f;
+    text-shadow: 0 0 15px rgba(255,213,79,0.6);
+    letter-spacing: 2px;
   }
 
   /* ============ ИГРОВОЕ ПОЛЕ ============ */
   #canvasWrap {
     flex: 1; display: flex; align-items: center; justify-content: center;
-    overflow: hidden; position: relative; padding: 10px;
-    background:
-      radial-gradient(circle at 30% 20%, rgba(79,195,247,0.08) 0%, transparent 50%),
-      radial-gradient(circle at 70% 80%, rgba(255,107,107,0.06) 0%, transparent 50%),
-      #0f1420;
+    overflow: hidden; position: relative; padding: 12px;
+    z-index: 1;
   }
 
   #gameCanvas {
     display: block;
-    box-shadow: 0 0 40px rgba(79,195,247,0.2), 0 0 80px rgba(0,0,0,0.8) inset;
-    border-radius: 4px; touch-action: none;
+    border-radius: 8px;
+    touch-action: none;
     max-width: 100%; max-height: 100%;
+    box-shadow:
+      0 0 60px rgba(79,195,247,0.25),
+      0 0 120px rgba(0,0,0,0.9),
+      0 0 2px rgba(79,195,247,0.5);
+    border: 1px solid rgba(79,195,247,0.2);
   }
 
-  /* ============ ДЖОЙСТИКИ ============ */
+  /* ============ ДЖОЙСТИКИ (УЛУЧШЕННЫЕ) ============ */
   .joystick {
     display: none; position: fixed;
     bottom: calc(20px + env(safe-area-inset-bottom));
     width: 130px; height: 130px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 70%);
-    border: 2px solid rgba(255,255,255,0.15);
-    z-index: 50; touch-action: none; transition: all 0.2s;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, transparent 80%);
+    border: 2px solid rgba(255,255,255,0.2);
+    z-index: 50; touch-action: none;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
   }
-  .joystick.left { left: 20px; border-color: rgba(79,195,247,0.5); box-shadow: 0 0 20px rgba(79,195,247,0.3); }
-  .joystick.right { right: 20px; border-color: rgba(255,107,107,0.5); box-shadow: 0 0 20px rgba(255,107,107,0.3); }
+  .joystick.left {
+    left: 20px;
+    border-color: rgba(79,195,247,0.55);
+    box-shadow: 0 0 25px rgba(79,195,247,0.4), inset 0 0 30px rgba(79,195,247,0.1);
+  }
+  .joystick.right {
+    right: 20px;
+    border-color: rgba(255,107,107,0.55);
+    box-shadow: 0 0 25px rgba(255,107,107,0.4), inset 0 0 30px rgba(255,107,107,0.1);
+  }
 
   .joystick .stick {
     position: absolute; top: 50%; left: 50%;
-    width: 55px; height: 55px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.7), rgba(255,255,255,0.2));
+    width: 58px; height: 58px; border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9) 0%, rgba(200,220,240,0.6) 40%, rgba(80,100,140,0.5) 100%);
     transform: translate(-50%, -50%);
     pointer-events: none;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.3);
+    transition: box-shadow 0.15s;
   }
-  .joystick.left .stick { box-shadow: 0 0 15px rgba(79,195,247,0.7), 0 4px 10px rgba(0,0,0,0.5); }
-  .joystick.right .stick { box-shadow: 0 0 15px rgba(255,107,107,0.7), 0 4px 10px rgba(0,0,0,0.5); }
+  .joystick.left .stick {
+    box-shadow: 0 0 20px rgba(79,195,247,0.9), 0 4px 12px rgba(0,0,0,0.6);
+  }
+  .joystick.right .stick {
+    box-shadow: 0 0 20px rgba(255,107,107,0.9), 0 4px 12px rgba(0,0,0,0.6);
+  }
 
   .joystick .label {
-    position: absolute; bottom: -25px; left: 50%;
+    position: absolute; bottom: -28px; left: 50%;
     transform: translateX(-50%);
-    font-size: 0.7em; color: rgba(255,255,255,0.5);
-    letter-spacing: 1px; white-space: nowrap;
+    font-size: 0.7em; color: rgba(255,255,255,0.6);
+    letter-spacing: 1.5px; white-space: nowrap;
+    font-weight: 600;
+    text-transform: uppercase;
   }
 
-  /* Кнопка огня */
+  /* ============ КНОПКА ОГНЯ ============ */
   .fireBtn {
     display: none;
     position: fixed;
     right: 30px;
     bottom: calc(180px + env(safe-area-inset-bottom));
-    width: 90px; height: 90px;
+    width: 95px; height: 95px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #ff9999, #cc0000);
-    border: 3px solid rgba(255,107,107,0.7);
-    box-shadow: 0 0 25px rgba(255,107,107,0.6), 0 4px 15px rgba(0,0,0,0.5);
+    background:
+      radial-gradient(circle at 35% 35%, #ffb3b3 0%, #ff6b6b 30%, #cc0000 80%);
+    border: 3px solid rgba(255,180,180,0.8);
+    box-shadow:
+      0 0 35px rgba(255,107,107,0.8),
+      0 8px 25px rgba(0,0,0,0.5),
+      inset 0 0 30px rgba(255,255,255,0.2);
     color: #fff;
-    font-size: 2em;
+    font-size: 2.2em;
     z-index: 55;
-    display: none;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-weight: bold;
     touch-action: none;
     user-select: none;
+    transition: transform 0.08s, box-shadow 0.1s;
   }
-  .fireBtn:active { transform: scale(0.92); }
+  .fireBtn:active {
+    transform: scale(0.9);
+    box-shadow:
+      0 0 50px rgba(255,107,107,1),
+      0 0 80px rgba(255,107,107,0.5),
+      inset 0 0 30px rgba(255,255,255,0.3);
+  }
   .fireBtn .label {
     position: absolute;
-    bottom: -22px;
+    bottom: -26px;
     left: 50%; transform: translateX(-50%);
-    font-size: 0.4em;
-    color: rgba(255,255,255,0.7);
+    font-size: 0.35em;
+    color: rgba(255,255,255,0.8);
     white-space: nowrap;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    font-weight: 700;
   }
 
   /* ============ ОВЕРЛЕЙ ============ */
   .overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.9);
-    backdrop-filter: blur(6px);
+    background: radial-gradient(circle at 50% 40%, rgba(20,30,55,0.95) 0%, rgba(5,8,16,0.98) 70%);
+    backdrop-filter: blur(15px);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     z-index: 100; padding: 20px; text-align: center;
@@ -149,89 +233,126 @@
   .overlay.hidden { display: none; }
 
   .overlay h1 {
-    font-size: 2.5em; margin-bottom: 20px;
-    background: linear-gradient(90deg, #4fc3f7, #00e5ff, #4fc3f7);
-    background-size: 200% auto;
+    font-size: 3em;
+    margin-bottom: 15px;
+    background: linear-gradient(90deg, #4fc3f7 0%, #00e5ff 30%, #ffd54f 50%, #00e5ff 70%, #4fc3f7 100%);
+    background-size: 300% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: shine 3s linear infinite;
-    letter-spacing: 3px;
-    text-shadow: 0 0 30px rgba(79,195,247,0.5);
+    animation: shine 4s linear infinite;
+    letter-spacing: 4px;
+    font-weight: 800;
+    text-shadow: 0 0 60px rgba(79,195,247,0.5);
   }
-  @keyframes shine { to { background-position: 200% center; } }
+  @keyframes shine { to { background-position: 300% center; } }
 
   .overlay h2 {
-    font-size: 1.5em; margin-bottom: 15px;
+    font-size: 1.8em; margin-bottom: 15px;
     color: #4fc3f7;
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-shadow: 0 0 30px rgba(79,195,247,0.4);
   }
 
   .overlay p {
-    font-size: 1em; color: #b0d4e8;
+    font-size: 1em; color: #a0b8d0;
     margin-bottom: 15px; max-width: 500px;
     line-height: 1.6;
   }
 
   .overlay button {
-    padding: 14px 32px;
-    font-size: 1em; font-weight: bold;
-    letter-spacing: 1px;
-    border: none; border-radius: 10px;
+    padding: 16px 36px;
+    font-size: 1.05em; font-weight: 700;
+    letter-spacing: 1.5px;
+    border: none; border-radius: 14px;
     cursor: pointer; color: #fff;
     background: linear-gradient(135deg, #4fc3f7, #0288d1);
-    box-shadow: 0 4px 15px rgba(79,195,247,0.4);
-    text-transform: uppercase; font-family: inherit;
-    margin: 5px; min-height: 48px;
+    box-shadow:
+      0 6px 20px rgba(79,195,247,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.25),
+      0 -2px 0 rgba(0,0,0,0.2) inset;
+    text-transform: uppercase;
+    font-family: inherit;
+    margin: 6px; min-height: 52px;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
   }
-  .overlay button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(79,195,247,0.6); }
+  .overlay button::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+  }
+  .overlay button:hover::before { left: 100%; }
+  .overlay button:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(79,195,247,0.6); }
   .overlay button:active { transform: translateY(0); }
+
   .overlay button.danger {
     background: linear-gradient(135deg, #ff6b6b, #cc0000);
-    box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+    box-shadow: 0 6px 20px rgba(255,107,107,0.4);
   }
   .overlay button.success {
     background: linear-gradient(135deg, #66bb6a, #388e3c);
-    box-shadow: 0 4px 15px rgba(102,187,106,0.4);
+    box-shadow: 0 6px 20px rgba(102,187,106,0.4);
+  }
+  .overlay button.gold {
+    background: linear-gradient(135deg, #ffd54f, #f57c00);
+    box-shadow: 0 6px 20px rgba(255,213,79,0.5);
+    color: #1a1a1a;
   }
 
   .menu-buttons {
     display: flex; gap: 15px;
     flex-wrap: wrap; justify-content: center;
-    margin-top: 10px;
+    margin-top: 15px;
+    width: 100%; max-width: 500px;
+  }
+  .menu-buttons button {
+    flex: 1 1 200px;
+    max-width: 240px;
   }
 
+  /* ============ КОМНАТА ============ */
   .room-code-box {
-    background: rgba(79,195,247,0.15);
-    border: 2px dashed #4fc3f7;
-    border-radius: 15px;
-    padding: 20px 30px;
+    background:
+      linear-gradient(135deg, rgba(79,195,247,0.15), rgba(0,229,255,0.08));
+    border: 2px dashed rgba(79,195,247,0.6);
+    border-radius: 18px;
+    padding: 22px 35px;
     margin: 20px 0;
-    font-size: 2.5em;
-    font-weight: bold;
-    letter-spacing: 8px;
+    font-size: 2.8em;
+    font-weight: 800;
+    letter-spacing: 10px;
     color: #00e5ff;
-    text-shadow: 0 0 20px rgba(0,229,255,0.8);
+    text-shadow:
+      0 0 20px rgba(0,229,255,0.9),
+      0 0 40px rgba(0,229,255,0.5);
     animation: pulse-glow 2s ease-in-out infinite;
     word-break: break-all;
+    font-family: 'Courier New', monospace;
   }
   @keyframes pulse-glow {
-    0%,100% { box-shadow: 0 0 20px rgba(0,229,255,0.4); }
-    50% { box-shadow: 0 0 40px rgba(0,229,255,0.8); }
+    0%,100% { box-shadow: 0 0 30px rgba(0,229,255,0.4); }
+    50% { box-shadow: 0 0 60px rgba(0,229,255,0.8); }
   }
 
   .copy-box {
     display: flex; gap: 10px;
     align-items: center; justify-content: center;
     margin: 15px 0; flex-wrap: wrap;
+    width: 100%; max-width: 500px;
   }
   .copy-box input {
-    padding: 12px 15px; font-size: 0.85em;
-    border-radius: 8px;
+    padding: 14px 18px; font-size: 0.85em;
+    border-radius: 10px;
     border: 2px solid rgba(79,195,247,0.4);
-    background: rgba(10,25,41,0.7);
-    color: #b0d4e8;
-    width: 320px; max-width: 90vw;
+    background: rgba(10,20,40,0.8);
+    color: #a0c8e0;
+    flex: 1; min-width: 200px;
     font-family: monospace;
     outline: none;
   }
@@ -242,42 +363,51 @@
     justify-content: center;
   }
   input.codeInput {
-    padding: 14px 20px;
-    font-size: 1.2em; border-radius: 10px;
-    border: 2px solid rgba(79,195,247,0.4);
-    background: rgba(10,25,41,0.7);
+    padding: 16px 24px;
+    font-size: 1.4em; border-radius: 14px;
+    border: 2px solid rgba(79,195,247,0.5);
+    background: rgba(10,20,40,0.8);
     color: #fff; outline: none;
     text-align: center;
-    letter-spacing: 4px; font-weight: bold;
+    letter-spacing: 8px; font-weight: 800;
     text-transform: uppercase;
-    width: 220px; font-family: inherit;
+    width: 250px; font-family: 'Courier New', monospace;
+    transition: all 0.3s;
   }
   input.codeInput:focus {
     border-color: #4fc3f7;
-    box-shadow: 0 0 20px rgba(79,195,247,0.5);
+    box-shadow: 0 0 30px rgba(79,195,247,0.6);
   }
 
+  /* ============ ИНФО ПАНЕЛЬ ============ */
   .controls-info {
-    background: rgba(20,25,45,0.9);
-    border: 2px solid rgba(79,195,247,0.3);
-    border-radius: 15px;
-    padding: 20px 25px;
+    background: linear-gradient(135deg, rgba(20,30,55,0.9), rgba(15,20,40,0.95));
+    border: 1px solid rgba(79,195,247,0.3);
+    border-radius: 18px;
+    padding: 22px 28px;
     margin: 15px 0;
-    max-width: 500px;
+    max-width: 520px;
     text-align: left;
     width: 100%;
+    box-shadow:
+      0 8px 30px rgba(0,0,0,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
   }
   .controls-info h3 {
     color: #4fc3f7;
     margin-bottom: 15px;
     text-align: center;
-    font-size: 1em;
-    letter-spacing: 2px;
+    font-size: 0.9em;
+    letter-spacing: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
   }
   .controls-info .row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    align-items: center;
+    padding: 10px 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
     font-size: 0.85em;
     gap: 10px;
@@ -285,78 +415,55 @@
   }
   .controls-info .row:last-child { border-bottom: none; }
   .controls-info .key {
-    background: rgba(79,195,247,0.15);
-    border: 1px solid rgba(79,195,247,0.4);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-family: monospace;
-    color: #4fc3f7;
-    font-weight: bold;
+    background: linear-gradient(180deg, rgba(79,195,247,0.25), rgba(79,195,247,0.1));
+    border: 1px solid rgba(79,195,247,0.5);
+    border-bottom-width: 2px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    color: #7fdbff;
+    font-weight: 700;
     display: inline-block;
     margin: 1px;
-  }
-  .controls-info .p1 { color: #4fc3f7; }
-  .controls-info .p2 { color: #ff6b6b; }
-
-  .connection-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 18px;
-    border-radius: 20px;
-    background: rgba(255,255,255,0.05);
     font-size: 0.9em;
-    margin-bottom: 10px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.3);
   }
-  .dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: #ff6b6b;
-    box-shadow: 0 0 10px currentColor;
-    animation: pulse-dot 1.5s infinite;
-  }
-  .dot.online { background: #66bb6a; }
-  @keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  .controls-info .p1 { color: #4fc3f7; font-weight: 700; }
+  .controls-info .p2 { color: #ff6b6b; font-weight: 700; }
 
-  .loader {
-    display: inline-block;
-    width: 40px; height: 40px;
-    border: 4px solid rgba(79,195,247,0.3);
-    border-top-color: #4fc3f7;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Ноты */
+  /* ============ УВЕДОМЛЕНИЕ ============ */
   .notification {
     position: fixed;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%) scale(0);
-    background: linear-gradient(135deg, rgba(79,195,247,0.95), rgba(2,136,209,0.95));
-    padding: 30px 50px;
-    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(79,195,247,0.98), rgba(2,136,209,0.98));
+    padding: 35px 60px;
+    border-radius: 24px;
     font-size: 1.8em;
-    font-weight: bold;
+    font-weight: 800;
     z-index: 200;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    box-shadow:
+      0 25px 70px rgba(0,0,0,0.7),
+      0 0 100px rgba(79,195,247,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.3);
     text-align: center;
     pointer-events: none;
     transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     max-width: 90vw;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
   }
   .notification.show { transform: translate(-50%, -50%) scale(1); }
 
-  /* Кнопка звука */
+  /* ============ КНОПКА ЗВУКА ============ */
   .soundBtn {
     position: absolute;
-    top: calc(8px + env(safe-area-inset-top));
-    right: 10px;
-    width: 40px; height: 40px;
+    top: calc(12px + env(safe-area-inset-top));
+    right: 12px;
+    width: 44px; height: 44px;
     border-radius: 50%;
-    background: rgba(0,0,0,0.5);
-    border: 2px solid rgba(102,187,106,0.6);
+    background: rgba(0,0,0,0.6);
+    border: 2px solid rgba(102,187,106,0.7);
     color: #fff;
     font-size: 1.2em;
     display: flex;
@@ -364,34 +471,56 @@
     justify-content: center;
     cursor: pointer;
     z-index: 20;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+    box-shadow: 0 0 20px rgba(102,187,106,0.4);
   }
-  .soundBtn.muted { border-color: rgba(117,117,117,0.6); }
+  .soundBtn:active { transform: scale(0.9); }
+  .soundBtn.muted {
+    border-color: rgba(117,117,117,0.6);
+    box-shadow: none;
+    background: rgba(0,0,0,0.4);
+  }
 
-  /* Скрытие */
+  /* ============ LOADER ============ */
+  .loader {
+    display: inline-block;
+    width: 50px; height: 50px;
+    border: 4px solid rgba(79,195,247,0.2);
+    border-top-color: #4fc3f7;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+    box-shadow: 0 0 30px rgba(79,195,247,0.4);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============ АДАПТАЦИЯ ============ */
   body.is-mobile .joystick { display: block; }
   body.is-mobile .fireBtn { display: flex; }
-  body.solo-mode .fireBtn { display: none !important; }
-  body.solo-mode .joystick.right { display: none !important; }
-  body.solo-mode .fireBtn.solo { display: flex !important; }
 
   @media (max-width: 600px) {
-    .topBar { padding: 6px 10px; }
-    .player-score { padding: 4px 10px; font-size: 0.8em; }
-    .player-score .score { font-size: 1.2em; }
-    .overlay h1 { font-size: 1.8em; }
-    .overlay p { font-size: 0.95em; }
-    .room-code-box { font-size: 1.8em; letter-spacing: 5px; padding: 15px 20px; }
+    .topBar { padding: 8px 12px; }
+    .player-score { padding: 5px 12px; font-size: 0.8em; border-radius: 10px; }
+    .player-score .score { font-size: 1.3em; }
+    .overlay h1 { font-size: 2em; letter-spacing: 2px; }
+    .overlay h2 { font-size: 1.4em; }
+    .overlay p { font-size: 0.9em; }
+    .room-code-box { font-size: 1.9em; letter-spacing: 6px; padding: 18px 24px; }
     .joystick { width: 110px; height: 110px; }
     .joystick .stick { width: 48px; height: 48px; }
-    .fireBtn { width: 75px; height: 75px; right: 25px; bottom: calc(155px + env(safe-area-inset-bottom)); }
+    .fireBtn { width: 80px; height: 80px; right: 22px; bottom: calc(155px + env(safe-area-inset-bottom)); font-size: 1.8em; }
+    .controls-info { padding: 15px 20px; }
+    .menu-buttons button { flex: 1 1 100%; max-width: 100%; }
   }
 
   @media (orientation: landscape) and (max-height: 500px) {
     .joystick { width: 90px; height: 90px; bottom: 8px; }
     .joystick .stick { width: 40px; height: 40px; }
-    .fireBtn { width: 70px; height: 70px; right: 20px; bottom: calc(120px + env(safe-area-inset-bottom)); }
-    .topBar { padding: 4px 8px; }
-    .player-score { padding: 3px 8px; font-size: 0.75em; }
+    .fireBtn { width: 70px; height: 70px; right: 18px; bottom: calc(120px + env(safe-area-inset-bottom)); font-size: 1.5em; }
+    .topBar { padding: 4px 10px; }
+    .player-score { padding: 3px 10px; font-size: 0.75em; }
+    .overlay h1 { font-size: 1.5em; }
   }
 </style>
 </head>
@@ -404,30 +533,29 @@
       <span class="score" id="score1">0</span>
     </div>
     <div class="round-info">
-      <div class="round-label">До победы</div>
-      <div class="round-value"><span id="score1">0</span>:<span id="score2">0</span></div>
+      <div class="round-label">МАТЧ</div>
+      <div class="round-value" id="roundNum">0 : 0</div>
     </div>
     <div class="player-score p2" id="score2Box">
       <span class="label">🔴 <span id="name2">P2</span></span>
-      <span class="score" id="score2b">0</span>
+      <span class="score" id="score2">0</span>
     </div>
+    <button class="soundBtn" id="soundBtn" onclick="toggleSound()">🔊</button>
   </div>
 
   <div id="canvasWrap">
     <canvas id="gameCanvas"></canvas>
   </div>
-
-  <div class="soundBtn" id="soundBtn" onclick="toggleSound()">🔊</div>
 </div>
 
 <!-- Мобильные джойстики -->
 <div class="joystick left" id="joyLeft">
   <div class="stick" id="stickLeft"></div>
-  <div class="label">Движение</div>
+  <div class="label">ДВИЖЕНИЕ</div>
 </div>
 <div class="joystick right" id="joyRight">
   <div class="stick" id="stickRight"></div>
-  <div class="label">Движение</div>
+  <div class="label">ДВИЖЕНИЕ</div>
 </div>
 
 <!-- Кнопка огня -->
@@ -447,19 +575,19 @@
       <span class="p1">🔵 Игрок 1</span>
       <span>
         <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
-        + <span class="key">Пробел</span>
+        + <span class="key">ПРОБЕЛ</span>
       </span>
     </div>
     <div class="row">
       <span class="p2">🔴 Игрок 2</span>
       <span>
         <span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span>
-        + <span class="key">Enter</span>
+        + <span class="key">ENTER</span>
       </span>
     </div>
     <div class="row">
       <span>📱 Телефон</span>
-      <span>Джойстики + кнопка 💥</span>
+      <span>Джойстики + 💥</span>
     </div>
   </div>
 
@@ -467,12 +595,12 @@
     <button onclick="showCreateScreen()">🎮 СОЗДАТЬ ИГРУ</button>
     <button onclick="showJoinScreen()">🔗 ПОДКЛЮЧИТЬСЯ</button>
   </div>
-  <button class="success" onclick="startSoloMode()" style="margin-top:10px">🎯 ИГРАТЬ ВДВОЁМ НА ОДНОМ УСТРОЙСТВЕ</button>
+  <button class="gold" onclick="startSoloMode()" style="margin-top:10px">🎯 ИГРАТЬ ВДВОЁМ НА ОДНОМ УСТРОЙСТВЕ</button>
 </div>
 
 <!-- ЭКРАН СОЗДАНИЯ -->
 <div class="overlay hidden" id="createScreen">
-  <h2>🎮 Создание игры</h2>
+  <h2>🎮 Комната создана</h2>
   <p>Отправьте другу код или ссылку</p>
   <div class="room-code-box" id="roomCodeDisplay">...</div>
   <div class="copy-box">
@@ -480,39 +608,39 @@
     <button onclick="copyLink()">📋</button>
   </div>
   <div class="loader"></div>
-  <p id="waitingText" style="color:#4fc3f7">⏳ Ожидание подключения друга...</p>
+  <p id="waitingText" style="color:#4fc3f7">⏳ Ожидание подключения...</p>
   <button class="danger" onclick="backToMenu()">← НАЗАД</button>
 </div>
 
 <!-- ЭКРАН ПОДКЛЮЧЕНИЯ -->
 <div class="overlay hidden" id="joinScreen">
   <h2>🔗 Подключение</h2>
-  <p>Введите код, который прислал друг</p>
+  <p>Введите код комнаты</p>
   <div class="input-group">
     <input type="text" class="codeInput" id="joinCodeInput" maxlength="6" placeholder="ABC123" autocomplete="off">
   </div>
   <button onclick="joinGame()">🚀 ПОДКЛЮЧИТЬСЯ</button>
-  <div id="joinError" style="color:#ff6b6b; margin-top:15px; min-height:24px;"></div>
+  <div id="joinError" style="color:#ff6b6b; margin-top:15px; min-height:24px; font-weight:600;"></div>
   <button class="danger" onclick="backToMenu()">← НАЗАД</button>
 </div>
 
-<!-- ЭКРАН ПОБЕДЫ РАУНДА -->
+<!-- ЭКРАН РАУНДА -->
 <div class="overlay hidden" id="roundScreen">
-  <h1 id="roundTitle">🎯 ПОБЕДА!</h1>
-  <p id="roundText">Вы победили в этом раунде!</p>
-  <button onclick="nextRound()">➡️ СЛЕДУЮЩИЙ РАУНД</button>
+  <h1 id="roundTitle">🎯 РАУНД</h1>
+  <p id="roundText"></p>
+  <button class="success" onclick="nextRound()">➡️ СЛЕДУЮЩИЙ РАУНД</button>
 </div>
 
-<!-- ЭКРАН КОНЦА ИГРЫ -->
+<!-- ЭКРАН КОНЦА -->
 <div class="overlay hidden" id="gameoverScreen">
-  <h1 id="gameoverTitle">🏆 ИГРА ОКОНЧЕНА</h1>
+  <h1 id="gameoverTitle">🏆 КОНЕЦ</h1>
   <p id="gameoverText"></p>
   <button class="success" onclick="restartMatch()">🔄 ИГРАТЬ СНОВА</button>
 </div>
 
 <script>
 // ===================================================
-// КОНФИГУРАЦИЯ WebRTC
+// WebRTC конфигурация
 // ===================================================
 const ICE_SERVERS = {
   iceServers: [
@@ -525,7 +653,7 @@ const ICE_SERVERS = {
 };
 
 // ===================================================
-// ОПРЕДЕЛЕНИЕ УСТРОЙСТВА
+// УСТРОЙСТВО
 // ===================================================
 const DeviceInfo = (function() {
   const ua = navigator.userAgent || '';
@@ -547,10 +675,18 @@ function vibrate(pattern) {
 }
 
 // ===================================================
-// ЗВУК (Web Audio API)
+// ЗВУК
 // ===================================================
 const Sound = {
-  ctx: null, enabled: true, masterGain: null,
+  ctx: null,
+  enabled: true,
+  masterGain: null,
+  engineGain: null,
+  engineOsc: null,
+  engineOsc2: null,
+  engineFilter: null,
+  enginePlaying: false,
+
   init() {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
     try {
@@ -560,6 +696,7 @@ const Sound = {
       this.masterGain.connect(this.ctx.destination);
     } catch (e) { this.enabled = false; }
   },
+
   tone(freq, duration, type = 'sine', volume = 0.3, delay = 0) {
     if (!this.enabled || !this.ctx) return;
     const t = this.ctx.currentTime + delay;
@@ -573,6 +710,7 @@ const Sound = {
     osc.connect(gain); gain.connect(this.masterGain);
     osc.start(t); osc.stop(t + duration + 0.05);
   },
+
   sweep(f1, f2, dur, type = 'sine', vol = 0.3, delay = 0) {
     if (!this.enabled || !this.ctx) return;
     const t = this.ctx.currentTime + delay;
@@ -587,6 +725,7 @@ const Sound = {
     osc.connect(gain); gain.connect(this.masterGain);
     osc.start(t); osc.stop(t + dur + 0.05);
   },
+
   noise(dur, vol = 0.3, freq = 1000, delay = 0, type = 'lowpass', Q = 1) {
     if (!this.enabled || !this.ctx) return;
     const t = this.ctx.currentTime + delay;
@@ -606,57 +745,134 @@ const Sound = {
     src.connect(filter); filter.connect(gain); gain.connect(this.masterGain);
     src.start(t); src.stop(t + dur);
   },
-  // ВЫСТРЕЛ
+
+  // === ЗВУК ДВИГАТЕЛЯ ===
+  startEngine() {
+    if (!this.enabled || !this.ctx) return;
+    if (this.enginePlaying) return;
+    this.enginePlaying = true;
+
+    // Основной низкий гул
+    this.engineOsc = this.ctx.createOscillator();
+    this.engineOsc.type = 'sawtooth';
+    this.engineOsc.frequency.value = 55;
+
+    // Второй слой для насыщенности
+    this.engineOsc2 = this.ctx.createOscillator();
+    this.engineOsc2.type = 'square';
+    this.engineOsc2.frequency.value = 28;
+
+    // Фильтр для "мотора"
+    this.engineFilter = this.ctx.createBiquadFilter();
+    this.engineFilter.type = 'lowpass';
+    this.engineFilter.frequency.value = 400;
+    this.engineFilter.Q.value = 5;
+
+    // Гейн
+    this.engineGain = this.ctx.createGain();
+    this.engineGain.gain.value = 0;
+
+    // Шум для "поршней"
+    const noiseSize = Math.floor(this.ctx.sampleRate * 0.5);
+    const noiseBuf = this.ctx.createBuffer(1, noiseSize, this.ctx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < noiseSize; i++) nd[i] = Math.random() * 2 - 1;
+    const noiseSrc = this.ctx.createBufferSource();
+    noiseSrc.buffer = noiseBuf;
+    noiseSrc.loop = true;
+    const noiseFilter = this.ctx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 200;
+    noiseFilter.Q.value = 2;
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.value = 0.15;
+
+    noiseSrc.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(this.engineGain);
+
+    this.engineOsc.connect(this.engineFilter);
+    this.engineOsc2.connect(this.engineFilter);
+    this.engineFilter.connect(this.engineGain);
+    this.engineGain.connect(this.masterGain);
+
+    this.engineOsc.start();
+    this.engineOsc2.start();
+    noiseSrc.start();
+    this._noiseSrc = noiseSrc;
+  },
+
+  updateEngine(speed) {
+    if (!this.enabled || !this.ctx || !this.engineGain) return;
+    const t = this.ctx.currentTime;
+    // speed 0..1
+    const vol = 0.04 + speed * 0.12;
+    const freq = 45 + speed * 55;
+    const freq2 = 25 + speed * 30;
+    this.engineGain.gain.linearRampToValueAtTime(vol, t + 0.08);
+    if (this.engineOsc) this.engineOsc.frequency.linearRampToValueAtTime(freq, t + 0.08);
+    if (this.engineOsc2) this.engineOsc2.frequency.linearRampToValueAtTime(freq2, t + 0.08);
+    if (this.engineFilter) this.engineFilter.frequency.linearRampToValueAtTime(300 + speed * 500, t + 0.08);
+  },
+
+  stopEngine() {
+    if (!this.enginePlaying) return;
+    this.enginePlaying = false;
+    try { this.engineGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.2); } catch(e){}
+    setTimeout(() => {
+      try { this.engineOsc?.stop(); } catch(e){}
+      try { this.engineOsc2?.stop(); } catch(e){}
+      try { this._noiseSrc?.stop(); } catch(e){}
+      this.engineOsc = null;
+      this.engineOsc2 = null;
+      this.engineGain = null;
+      this.engineFilter = null;
+    }, 300);
+  },
+
+  // === СТАРЫЕ ЗВУКИ ===
   playShoot() {
     this.init();
-    this.sweep(600, 100, 0.15, 'square', 0.2);
-    this.noise(0.1, 0.15, 2000, 0, 'highpass');
-    this.tone(180, 0.15, 'sawtooth', 0.15, 0.02);
+    this.sweep(700, 100, 0.18, 'square', 0.25);
+    this.noise(0.12, 0.2, 2200, 0, 'highpass');
+    this.tone(160, 0.15, 'sawtooth', 0.15, 0.02);
   },
-  // ВЗРЫВ
   playExplosion() {
     this.init();
-    this.tone(60, 0.6, 'sine', 0.5, 0);
-    this.tone(40, 0.8, 'sine', 0.4, 0.03);
-    this.noise(0.5, 0.4, 700, 0, 'lowpass', 1.5);
-    this.noise(0.3, 0.25, 2500, 0.05, 'highpass', 0.5);
-    this.sweep(1500, 100, 0.3, 'square', 0.15);
+    this.tone(55, 0.7, 'sine', 0.6, 0);
+    this.tone(38, 0.9, 'sine', 0.5, 0.03);
+    this.noise(0.55, 0.45, 700, 0, 'lowpass', 1.5);
+    this.noise(0.35, 0.3, 2500, 0.05, 'highpass', 0.5);
+    this.sweep(1800, 80, 0.35, 'square', 0.2);
+    this.tone(30, 1.2, 'sine', 0.25, 0.3);
   },
-  // ПОПАДАНИЕ ПО СТЕНЕ
   playWallHit() {
     this.init();
-    this.tone(220, 0.1, 'square', 0.15);
-    this.noise(0.1, 0.15, 1200, 0, 'bandpass', 0.8);
+    this.tone(200, 0.1, 'square', 0.18);
+    this.noise(0.1, 0.18, 1200, 0, 'bandpass', 0.8);
   },
-  // ОТСКОК
   playBounce() {
     this.init();
-    this.tone(1200, 0.06, 'sine', 0.15);
-    this.sweep(1400, 800, 0.1, 'sine', 0.1);
+    this.tone(1300, 0.06, 'sine', 0.18);
+    this.sweep(1500, 800, 0.1, 'sine', 0.12);
   },
-  // КЛИК
   playClick() {
     this.init();
-    this.tone(1400, 0.05, 'sine', 0.1);
+    this.tone(1500, 0.05, 'sine', 0.12);
   },
-  // ПОБЕДА РАУНДА
   playRoundWin() {
     this.init();
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-    notes.forEach((f, i) => this.tone(f, 0.3, 'triangle', 0.3, i * 0.1));
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.tone(f, 0.35, 'triangle', 0.35, i * 0.1));
   },
-  // ПОРАЖЕНИЕ
   playRoundLose() {
     this.init();
-    [523.25, 415.3, 349.23].forEach((f, i) => this.tone(f, 0.4, 'triangle', 0.25, i * 0.15));
+    [523.25, 415.3, 349.23].forEach((f, i) => this.tone(f, 0.4, 'triangle', 0.3, i * 0.15));
   },
-  // ПОБЕДА В МАТЧЕ
   playVictory() {
     this.init();
-    const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
-    notes.forEach((f, i) => this.tone(f, 0.4, 'triangle', 0.35, i * 0.15));
-    this.tone(1567.98, 1.2, 'sine', 0.3, 0.8);
-    this.noise(1.2, 0.3, 400, 1.0, 'lowpass', 1.5);
+    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => this.tone(f, 0.4, 'triangle', 0.4, i * 0.15));
+    this.tone(1567.98, 1.2, 'sine', 0.35, 0.8);
+    this.noise(1.2, 0.35, 400, 1.0, 'lowpass', 1.5);
   }
 };
 
@@ -668,9 +884,11 @@ function toggleSound() {
     btn.textContent = '🔊';
     btn.classList.remove('muted');
     Sound.playClick();
+    if (G.phase === 'playing') Sound.startEngine();
   } else {
     btn.textContent = '🔇';
     btn.classList.add('muted');
+    Sound.stopEngine();
   }
 }
 document.addEventListener('click', () => Sound.init(), { once: true });
@@ -681,13 +899,13 @@ document.addEventListener('click', () => Sound.init(), { once: true });
 const TILE_SIZE = 40;
 const MAP_SIZE = 15;
 const CANVAS_SIZE = TILE_SIZE * MAP_SIZE;
-const TANK_SIZE = 30;
-const TANK_SPEED = 2.0;
-const BULLET_SPEED = 5.0;
-const BULLET_SIZE = 8;
+const TANK_SIZE = 32;
+const TANK_SPEED = 2.2;
+const BULLET_SPEED = 5.5;
+const BULLET_SIZE = 9;
 const BULLET_MAX_BOUNCES = 2;
 const WALL_HP_MAX = 3;
-const FIRE_COOLDOWN = 500;    // мс
+const FIRE_COOLDOWN = 450;
 
 const CELL_EMPTY = 0;
 const CELL_WALL  = 1;
@@ -754,31 +972,31 @@ const MAPS = [
 // СОСТОЯНИЕ
 // ===================================================
 const G = {
-  phase: 'menu',        // menu | connecting | playing | roundEnd | gameover | paused
-  mode: 'solo',         // solo | online
-  myRole: null,         // 'p1' | 'p2' — кем я играю в онлайн
+  phase: 'menu',
+  mode: 'solo',
+  myRole: null,
   isHost: false,
   peer: null,
   conn: null,
   roomCode: '',
   connected: false,
   map: [],
-  mapHP: [],            // HP каждой клетки стены
-  tanks: {},            // { p1, p2 }
+  mapHP: [],
+  tanks: {},
   bullets: [],
   particles: [],
+  treads: [],       // следы гусениц
   score: { p1: 0, p2: 0 },
   round: 1,
   maxScore: 5,
   canvas: null,
   ctx: null,
   lastTime: 0,
-  lastSyncTime: 0,
-  pendingShot: null
+  lastSyncTime: 0
 };
 
 // ===================================================
-// УПРАВЛЕНИЕ
+// INPUT
 // ===================================================
 const Input = {
   keys: {},
@@ -793,8 +1011,7 @@ const Input = {
       if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
     });
     document.addEventListener('keyup', (e) => {
-      const k = e.key.toLowerCase();
-      this.keys[k] = false;
+      this.keys[e.key.toLowerCase()] = false;
     });
 
     if (DeviceInfo.isTouch) {
@@ -876,33 +1093,24 @@ const Input = {
     const jl = this.joystickLeft;
     const jr = this.joystickRight;
 
-    // В solo-режиме: левый джойстик = P1, правый = P2
-    // В онлайн-режиме: левый = мой танк, кнопка огня = мой выстрел
-    if (G.mode === 'solo') {
-      this.keys['joy1_up']    = jl.active && jl.y < -0.3;
-      this.keys['joy1_down']  = jl.active && jl.y >  0.3;
-      this.keys['joy1_left']  = jl.active && jl.x < -0.3;
-      this.keys['joy1_right'] = jl.active && jl.x >  0.3;
+    // Всегда — оба джойстика (для solo и для online если что)
+    this.keys['joy1_up']    = jl.active && jl.y < -0.3;
+    this.keys['joy1_down']  = jl.active && jl.y >  0.3;
+    this.keys['joy1_left']  = jl.active && jl.x < -0.3;
+    this.keys['joy1_right'] = jl.active && jl.x >  0.3;
 
-      this.keys['joy2_up']    = jr.active && jr.y < -0.3;
-      this.keys['joy2_down']  = jr.active && jr.y >  0.3;
-      this.keys['joy2_left']  = jr.active && jr.x < -0.3;
-      this.keys['joy2_right'] = jr.active && jr.x >  0.3;
-    } else {
-      // Онлайн — только левый джойстик для движения
-      this.keys['joy1_up']    = jl.active && jl.y < -0.3;
-      this.keys['joy1_down']  = jl.active && jl.y >  0.3;
-      this.keys['joy1_left']  = jl.active && jl.x < -0.3;
-      this.keys['joy1_right'] = jl.active && jl.x >  0.3;
-    }
+    this.keys['joy2_up']    = jr.active && jr.y < -0.3;
+    this.keys['joy2_down']  = jr.active && jr.y >  0.3;
+    this.keys['joy2_left']  = jr.active && jr.x < -0.3;
+    this.keys['joy2_right'] = jr.active && jr.x >  0.3;
   }
 };
 
 // ===================================================
-// КЛАСС ТАНКА
+// ТАНК
 // ===================================================
 class Tank {
-  constructor(id, x, y, angle, color, controls) {
+  constructor(id, x, y, angle, color, controls, isRemote = false) {
     this.id = id;
     this.x = x;
     this.y = y;
@@ -915,47 +1123,51 @@ class Tank {
     this.vx = 0;
     this.vy = 0;
     this.lastFireTime = 0;
+    this.isRemote = isRemote;    // управляется по сети
+    this.speedFactor = 0;        // для звука двигателя
+    this.recoil = 0;             // отдача пушки
   }
 
   update(dt) {
-    if (!this.alive) return;
+    if (!this.alive) { this.speedFactor = 0; return; }
 
-    const keys = Input.keys;
+    let forward = 0, strafe = 0;
 
-    let forward = 0;
-    if (keys[this.controls.up]) forward += 1;
-    if (keys[this.controls.down]) forward -= 1;
-
-    let strafe = 0;
-    if (keys[this.controls.left]) strafe -= 1;
-    if (keys[this.controls.right]) strafe += 1;
+    // Если это мой танк — читаем input
+    if (this.shouldReadInput()) {
+      const keys = Input.keys;
+      if (keys[this.controls.up]) forward += 1;
+      if (keys[this.controls.down]) forward -= 1;
+      if (keys[this.controls.left]) strafe -= 1;
+      if (keys[this.controls.right]) strafe += 1;
+    }
 
     if (forward !== 0 || strafe !== 0) {
       const moveAngle = this.angle + Math.atan2(strafe, forward);
       const speedMult = (forward === 0) ? 0.7 : 1;
-
       this.vx = Math.sin(moveAngle) * TANK_SPEED * speedMult;
       this.vy = -Math.cos(moveAngle) * TANK_SPEED * speedMult;
 
       const newX = this.x + this.vx;
       const newY = this.y + this.vy;
-
       if (!this.collides(newX, this.y)) this.x = newX;
       if (!this.collides(this.x, newY)) this.y = newY;
 
-      this.trackOffset += (Math.abs(forward) + Math.abs(strafe) * 0.7) * 0.15;
+      this.trackOffset += (Math.abs(forward) + Math.abs(strafe) * 0.7) * 0.2;
+      this.speedFactor = Math.min(1, this.speedFactor + dt * 3);
     } else {
       this.vx = 0;
       this.vy = 0;
+      this.speedFactor = Math.max(0, this.speedFactor - dt * 3);
     }
 
-    // Плавный поворот
+    // Плавный поворот корпуса
     if (this.vx !== 0 || this.vy !== 0) {
       const moveAngle = Math.atan2(this.vx, -this.vy);
       let diff = moveAngle - this.angle;
       while (diff > Math.PI) diff -= 2 * Math.PI;
       while (diff < -Math.PI) diff += 2 * Math.PI;
-      this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.08);
+      this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.1);
     }
 
     this.turretAngle = this.angle;
@@ -965,31 +1177,42 @@ class Tank {
     this.x = Math.max(half, Math.min(CANVAS_SIZE - half, this.x));
     this.y = Math.max(half, Math.min(CANVAS_SIZE - half, this.y));
 
-    // Проверка выстрела
-    if (keys[this.controls.shoot] || (this.id === this.getMyTankId() && Input.fireBtnPressed)) {
-      this.tryShoot();
+    // Отдача
+    if (this.recoil > 0) this.recoil -= dt * 5;
+
+    // Стрельба
+    if (this.shouldReadInput()) {
+      const shootPressed = Input.keys[this.controls.shoot] || Input.fireBtnPressed;
+      if (shootPressed) this.tryShoot();
     }
   }
 
-  getMyTankId() {
-    if (G.mode === 'solo') return this.id;
-    return G.myRole;
+  shouldReadInput() {
+    if (G.mode === 'solo') return true;    // оба танка на одном устройстве
+    return this.id === G.myRole;           // в онлайне — только мой
   }
 
   tryShoot() {
     const now = performance.now();
     if (now - this.lastFireTime < FIRE_COOLDOWN) return;
     this.lastFireTime = now;
+    this.recoil = 1;
     fireBulletFrom(this);
+
+    // В онлайне отправляем
+    if (G.mode === 'online' && this.id === G.myRole) {
+      const angle = this.turretAngle;
+      const startX = this.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
+      const startY = this.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
+      sendMessage({ type: 'shot', x: startX, y: startY, angle });
+    }
   }
 
   collides(x, y) {
     const half = TANK_SIZE / 2 - 2;
     const corners = [
-      [x - half, y - half],
-      [x + half, y - half],
-      [x - half, y + half],
-      [x + half, y + half]
+      [x - half, y - half], [x + half, y - half],
+      [x - half, y + half], [x + half, y + half]
     ];
     for (const [cx, cy] of corners) {
       const col = Math.floor(cx / TILE_SIZE);
@@ -1003,71 +1226,127 @@ class Tank {
   draw(ctx) {
     if (!this.alive) return;
 
+    const recoilOffset = this.recoil * 3;
+
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Тень
+    // Тень с размытием
     ctx.save();
     ctx.rotate(this.angle);
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(-TANK_SIZE/2 + 2, -TANK_SIZE/2 + 4, TANK_SIZE, TANK_SIZE);
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.filter = 'blur(2px)';
+    ctx.fillRect(-TANK_SIZE/2 + 3, -TANK_SIZE/2 + 5, TANK_SIZE, TANK_SIZE);
+    ctx.filter = 'none';
     ctx.restore();
 
     // Корпус
     ctx.save();
     ctx.rotate(this.angle);
 
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(-TANK_SIZE/2, -TANK_SIZE/2, 7, TANK_SIZE);
-    ctx.fillRect(TANK_SIZE/2 - 7, -TANK_SIZE/2, 7, TANK_SIZE);
+    // Гусеницы
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(-TANK_SIZE/2, -TANK_SIZE/2, 8, TANK_SIZE);
+    ctx.fillRect(TANK_SIZE/2 - 8, -TANK_SIZE/2, 8, TANK_SIZE);
 
-    ctx.fillStyle = '#3a3a3a';
+    // Сегменты гусениц
+    ctx.fillStyle = '#2a2a2a';
     const segOffset = (this.trackOffset % 8);
     for (let i = -TANK_SIZE/2; i < TANK_SIZE/2 - 3; i += 8) {
-      ctx.fillRect(-TANK_SIZE/2 + 1, i + segOffset, 5, 4);
-      ctx.fillRect(TANK_SIZE/2 - 6, i + segOffset, 5, 4);
+      ctx.fillRect(-TANK_SIZE/2 + 1, i + segOffset, 6, 4);
+      ctx.fillRect(TANK_SIZE/2 - 7, i + segOffset, 6, 4);
     }
 
-    const grad = ctx.createLinearGradient(-TANK_SIZE/2, 0, TANK_SIZE/2, 0);
-    grad.addColorStop(0, this.color.dark);
-    grad.addColorStop(0.5, this.color.main);
-    grad.addColorStop(1, this.color.light);
-    ctx.fillStyle = grad;
-    ctx.fillRect(-TANK_SIZE/2 + 6, -TANK_SIZE/2 + 3, TANK_SIZE - 12, TANK_SIZE - 6);
+    // Светлые кромки гусениц
+    ctx.fillStyle = '#4a4a4a';
+    ctx.fillRect(-TANK_SIZE/2 + 1, -TANK_SIZE/2 + 1, 6, 2);
+    ctx.fillRect(TANK_SIZE/2 - 7, -TANK_SIZE/2 + 1, 6, 2);
 
+    // Корпус с градиентом
+    const grad = ctx.createLinearGradient(-TANK_SIZE/2, -TANK_SIZE/2, TANK_SIZE/2, TANK_SIZE/2);
+    grad.addColorStop(0, this.color.light);
+    grad.addColorStop(0.35, this.color.main);
+    grad.addColorStop(0.7, this.color.main);
+    grad.addColorStop(1, this.color.dark);
+    ctx.fillStyle = grad;
+    ctx.fillRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, TANK_SIZE - 8);
+
+    // Блик
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.fillRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, 3);
+
+    // Обводка
     ctx.strokeStyle = this.color.dark;
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(-TANK_SIZE/2 + 6, -TANK_SIZE/2 + 3, TANK_SIZE - 12, TANK_SIZE - 6);
+    ctx.strokeRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, TANK_SIZE - 8);
 
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    // Защитные полосы на корпусе
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(-TANK_SIZE/2 + 9, 0);
-    ctx.lineTo(TANK_SIZE/2 - 9, 0);
+    ctx.moveTo(-TANK_SIZE/2 + 10, -3);
+    ctx.lineTo(TANK_SIZE/2 - 10, -3);
+    ctx.moveTo(-TANK_SIZE/2 + 10, 3);
+    ctx.lineTo(TANK_SIZE/2 - 10, 3);
     ctx.stroke();
+
+    // Задние огни
+    ctx.fillStyle = 'rgba(255,50,50,0.7)';
+    ctx.beginPath();
+    ctx.arc(0, TANK_SIZE/2 - 5, 2, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.restore();
 
-    // Башня
+    // Башня с отдачей
     ctx.save();
     ctx.rotate(this.turretAngle);
+    ctx.translate(0, recoilOffset);
 
-    const turretGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 12);
+    // Тень башни
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
+
+    // Основа башни — скруглённый восьмиугольник
+    const turretGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, 14);
     turretGrad.addColorStop(0, this.color.light);
+    turretGrad.addColorStop(0.5, this.color.main);
     turretGrad.addColorStop(1, this.color.dark);
     ctx.fillStyle = turretGrad;
     ctx.beginPath();
-    ctx.arc(0, 0, 10, 0, Math.PI * 2);
+    ctx.arc(0, 0, 11, 0, Math.PI * 2);
     ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Кольцо башни
     ctx.strokeStyle = this.color.dark;
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = this.color.dark;
-    ctx.fillRect(-3, -TANK_SIZE/2 - 6, 6, TANK_SIZE/2 + 6);
+    // Блик на башне
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.beginPath();
+    ctx.arc(-3, -3, 5, 0, Math.PI * 2);
+    ctx.fill();
 
-    ctx.fillStyle = this.color.main;
-    ctx.fillRect(-5, -TANK_SIZE/2 - 2, 10, 8);
+    // Ствол
+    const barrelGrad = ctx.createLinearGradient(-3, 0, 3, 0);
+    barrelGrad.addColorStop(0, this.color.dark);
+    barrelGrad.addColorStop(0.5, this.color.main);
+    barrelGrad.addColorStop(1, this.color.dark);
+    ctx.fillStyle = barrelGrad;
+    ctx.fillRect(-3, -TANK_SIZE/2 - 8 + recoilOffset, 6, TANK_SIZE/2 + 8);
+
+    // Утолщение ствола у основания
+    ctx.fillStyle = this.color.dark;
+    ctx.fillRect(-5, -TANK_SIZE/2 - 2 + recoilOffset, 10, 9);
+
+    // Кольцо на стволе
+    ctx.fillStyle = this.color.light;
+    ctx.fillRect(-4, -TANK_SIZE/2 + 8 + recoilOffset, 8, 2);
 
     ctx.restore();
     ctx.restore();
@@ -1082,28 +1361,20 @@ function fireBulletFrom(tank) {
   const startX = tank.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
   const startY = tank.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
 
-  const bullet = {
-    x: startX,
-    y: startY,
+  G.bullets.push({
+    x: startX, y: startY,
     vx: Math.sin(angle) * BULLET_SPEED,
     vy: -Math.cos(angle) * BULLET_SPEED,
     owner: tank.id,
     bounces: 0,
     alive: true,
-    trail: []
-  };
+    trail: [],
+    from: tank.id
+  });
 
-  G.bullets.push(bullet);
   Sound.playShoot();
   vibrate(20);
-
-  // Вспышка у ствола
   spawnParticles(startX, startY, 'muzzle', tank.color.main);
-
-  // Если онлайн — отправляем выстрел
-  if (G.mode === 'online' && tank.id === G.myRole) {
-    sendMessage({ type: 'shot', x: startX, y: startY, angle });
-  }
 }
 
 function updateBullets(dt) {
@@ -1112,26 +1383,23 @@ function updateBullets(dt) {
   for (const b of G.bullets) {
     if (!b.alive) continue;
 
-    // Трейл
     b.trail.push({ x: b.x, y: b.y });
-    if (b.trail.length > 8) b.trail.shift();
+    if (b.trail.length > 10) b.trail.shift();
 
-    // Движение с подшагами (для точных коллизий)
-    const steps = 3;
+    const steps = 4;
     for (let s = 0; s < steps; s++) {
+      if (!b.alive) break;
       const stepX = b.vx * speedFactor / steps;
       const stepY = b.vy * speedFactor / steps;
 
-      // Проверка на стену
       const newX = b.x + stepX;
       const newY = b.y + stepY;
 
-      // Проверка на попадание в танк
+      // Проверка танков
       let hitTank = null;
       for (const id in G.tanks) {
         const tank = G.tanks[id];
-        if (!tank.alive) continue;
-        if (id === b.owner) continue;
+        if (!tank.alive || id === b.owner) continue;
         const dx = tank.x - newX;
         const dy = tank.y - newY;
         if (Math.hypot(dx, dy) < TANK_SIZE / 2 + BULLET_SIZE / 2) {
@@ -1142,14 +1410,11 @@ function updateBullets(dt) {
 
       if (hitTank) {
         b.alive = false;
-        killTank(hitTank, b.owner);
-        spawnParticles(b.x, b.y, 'explosion');
-        Sound.playExplosion();
-        vibrate([80, 30, 80]);
+        killTank(hitTank, b.owner, b);
         break;
       }
 
-      // Проверка на стену
+      // Проверка стен
       const col = Math.floor(newX / TILE_SIZE);
       const row = Math.floor(newY / TILE_SIZE);
 
@@ -1160,7 +1425,6 @@ function updateBullets(dt) {
 
       const cell = G.map[row][col];
       if (cell === CELL_STEEL) {
-        // Отскок от стали
         b.bounces++;
         if (b.bounces > BULLET_MAX_BOUNCES) {
           b.alive = false;
@@ -1168,18 +1432,15 @@ function updateBullets(dt) {
           Sound.playBounce();
           break;
         }
-        // Определяем от какой стороны отскок
+
+        // Определяем сторону отскока
         const cellX = col * TILE_SIZE;
         const cellY = row * TILE_SIZE;
         const relX = newX - cellX;
         const relY = newY - cellY;
-
-        const distLeft = relX;
-        const distRight = TILE_SIZE - relX;
-        const distTop = relY;
-        const distBottom = TILE_SIZE - relY;
+        const distLeft = relX, distRight = TILE_SIZE - relX;
+        const distTop = relY, distBottom = TILE_SIZE - relY;
         const minDist = Math.min(distLeft, distRight, distTop, distBottom);
-
         if (minDist === distLeft || minDist === distRight) b.vx = -b.vx;
         else b.vy = -b.vy;
 
@@ -1189,7 +1450,6 @@ function updateBullets(dt) {
         spawnParticles(b.x, b.y, 'spark');
         break;
       } else if (cell === CELL_WALL) {
-        // Урон по стене
         G.mapHP[row][col]--;
         spawnParticles(b.x, b.y, 'debris');
         Sound.playWallHit();
@@ -1198,10 +1458,8 @@ function updateBullets(dt) {
           G.map[row][col] = CELL_EMPTY;
           Sound.playExplosion();
           spawnParticles(col * TILE_SIZE + TILE_SIZE/2, row * TILE_SIZE + TILE_SIZE/2, 'explosion');
-          // Отправляем в онлайн
           if (G.mode === 'online') sendMessage({ type: 'wall', row, col });
         } else {
-          // Отправляем урон в онлайн
           if (G.mode === 'online') sendMessage({ type: 'wallHp', row, col, hp: G.mapHP[row][col] });
         }
 
@@ -1209,13 +1467,11 @@ function updateBullets(dt) {
         break;
       }
 
-      // Двигаемся
       b.x = newX;
       b.y = newY;
     }
   }
 
-  // Удаляем мёртвые
   G.bullets = G.bullets.filter(b => b.alive);
 }
 
@@ -1224,43 +1480,56 @@ function drawBullets(ctx) {
     // Трейл
     for (let i = 0; i < b.trail.length; i++) {
       const t = b.trail[i];
-      const alpha = (i / b.trail.length) * 0.4;
-      ctx.fillStyle = `rgba(255,200,50,${alpha})`;
+      const a = (i / b.trail.length) * 0.5;
+      const size = BULLET_SIZE / 2 * (i / b.trail.length);
+      ctx.fillStyle = `rgba(255,200,50,${a})`;
       ctx.beginPath();
-      ctx.arc(t.x, t.y, BULLET_SIZE / 2 * (i / b.trail.length), 0, Math.PI * 2);
+      ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Снаряд
+    // Свечение
+    ctx.shadowColor = '#ffaa00';
+    ctx.shadowBlur = 20;
+
+    // Основное тело
     const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, BULLET_SIZE);
-    grad.addColorStop(0, '#ffff00');
-    grad.addColorStop(0.5, '#ff8800');
-    grad.addColorStop(1, 'rgba(255,68,0,0.3)');
+    grad.addColorStop(0, '#ffffaa');
+    grad.addColorStop(0.4, '#ffdd00');
+    grad.addColorStop(0.8, '#ff8800');
+    grad.addColorStop(1, 'rgba(255,68,0,0.2)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(b.x, b.y, BULLET_SIZE / 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Свечение
-    ctx.shadowColor = '#ffaa00';
-    ctx.shadowBlur = 12;
+    // Ядро
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(b.x, b.y, BULLET_SIZE / 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff';
+    ctx.arc(b.x, b.y, BULLET_SIZE / 4, 0, Math.PI * 2);
     ctx.fill();
+
     ctx.shadowBlur = 0;
   }
 }
 
 // ===================================================
-// СМЕРТЬ ТАНКА
+// СМЕРТЬ
 // ===================================================
-function killTank(tank, killerId) {
+function killTank(tank, killerId, bullet) {
   if (!tank.alive) return;
   tank.alive = false;
 
-  // Большой взрыв
   spawnParticles(tank.x, tank.y, 'bigExplosion');
+  spawnParticles(tank.x, tank.y, 'debris', tank.color.main);
+  Sound.playExplosion();
+  vibrate([80, 30, 80]);
+
+  // Уведомляем противника в онлайне
+  if (G.mode === 'online' && tank.id !== G.myRole) {
+    // Мы убили — отправляем hit
+    sendMessage({ type: 'hit', killer: G.myRole });
+  }
 
   // Очки
   if (killerId && G.score[killerId] !== undefined) {
@@ -1268,103 +1537,41 @@ function killTank(tank, killerId) {
     updateScoreDisplay();
   }
 
-  // Проверка победы в раунде
+  // Проверка победы
   setTimeout(() => {
-    if (G.score.p1 >= G.maxScore) {
-      endGame('p1');
-    } else if (G.score.p2 >= G.maxScore) {
-      endGame('p2');
-    } else {
-      endRound(killerId);
-    }
-  }, 800);
-}
-
-function endRound(winnerId) {
-  G.phase = 'roundEnd';
-  const iWon = G.mode === 'solo' ? null : (winnerId === G.myRole);
-
-  let title = '🎯 РАУНД ОКОНЧЕН';
-  let text = '';
-  if (G.mode === 'solo') {
-    title = winnerId === 'p1' ? '🔵 P1 ПОБЕДИЛ!' : '🔴 P2 ПОБЕДИЛ!';
-    text = `Счёт: ${G.score.p1} : ${G.score.p2}`;
-  } else {
-    if (iWon) {
-      title = '🏆 ВЫ ПОБЕДИЛИ!';
-      text = `Счёт: ${G.score[G.myRole]} : ${G.score[G.myRole === 'p1' ? 'p2' : 'p1']}`;
-      Sound.playRoundWin();
-    } else {
-      title = '💀 ВЫ ПРОИГРАЛИ';
-      text = `Счёт: ${G.score[G.myRole]} : ${G.score[G.myRole === 'p1' ? 'p2' : 'p1']}`;
-      Sound.playRoundLose();
-    }
-  }
-
-  document.getElementById('roundTitle').textContent = title;
-  document.getElementById('roundText').textContent = text;
-  document.getElementById('roundScreen').classList.remove('hidden');
-}
-
-function endGame(winnerId) {
-  G.phase = 'gameover';
-  const iWon = G.mode === 'solo' ? null : (winnerId === G.myRole);
-
-  let title = '🏆 ИГРА ОКОНЧЕНА';
-  let text = '';
-
-  if (G.mode === 'solo') {
-    title = winnerId === 'p1' ? '🔵 P1 ПОБЕДИЛ!' : '🔴 P2 ПОБЕДИЛ!';
-    text = `Финальный счёт: ${G.score.p1} : ${G.score.p2}`;
-  } else {
-    if (iWon) {
-      title = '🏆 ВЫ ПОБЕДИЛИ!';
-      text = `Финальный счёт: ${G.score[G.myRole]} : ${G.score[G.myRole === 'p1' ? 'p2' : 'p1']}`;
-      Sound.playVictory();
-    } else {
-      title = '💀 ВЫ ПРОИГРАЛИ';
-      text = `Финальный счёт: ${G.score[G.myRole]} : ${G.score[G.myRole === 'p1' ? 'p2' : 'p1']}`;
-      Sound.playRoundLose();
-    }
-  }
-
-  document.getElementById('gameoverTitle').textContent = title;
-  document.getElementById('gameoverText').textContent = text;
-  document.getElementById('gameoverScreen').classList.remove('hidden');
+    if (G.score.p1 >= G.maxScore) endGame('p1');
+    else if (G.score.p2 >= G.maxScore) endGame('p2');
+    else endRound(killerId);
+  }, 900);
 }
 
 // ===================================================
 // ЧАСТИЦЫ
 // ===================================================
-function spawnParticles(x, y, type, color = null) {
-  const count = {
-    muzzle: 8,
-    spark: 6,
-    debris: 10,
-    explosion: 25,
-    bigExplosion: 50
-  }[type] || 10;
-
-  const colors = {
+function spawnParticles(x, y, type, colorOverride = null) {
+  const count = { muzzle: 10, spark: 8, debris: 12, explosion: 30, bigExplosion: 60 }[type] || 10;
+  const palette = {
     muzzle: ['#ffff00', '#ffaa00', '#ff6600'],
     spark: ['#ffff00', '#ffdd00', '#ffffff'],
     debris: ['#c17a3f', '#8a4a20', '#5a2a10'],
     explosion: ['#ff4400', '#ffaa00', '#ff6600', '#ffff00'],
-    bigExplosion: ['#ff4400', '#ffaa00', '#ff6600', '#ffff00', '#ffffff', '#888888']
+    bigExplosion: ['#ff4400', '#ffaa00', '#ff6600', '#ffff00', '#ffffff', '#888888', '#444444']
   }[type] || ['#fff'];
 
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = type === 'bigExplosion' ? 2 + Math.random() * 3 : 0.5 + Math.random() * 2;
-    const life = type === 'bigExplosion' ? 1.5 : 0.8;
+    const speed = type === 'bigExplosion' ? 2 + Math.random() * 4 : 0.5 + Math.random() * 2.5;
+    const life = type === 'bigExplosion' ? 1.8 : 0.9;
+    let color = colorOverride && Math.random() < 0.5 ? colorOverride : palette[Math.floor(Math.random() * palette.length)];
     G.particles.push({
       x, y,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life,
-      maxLife: life,
-      size: type === 'bigExplosion' ? 6 + Math.random() * 5 : 2 + Math.random() * 3,
-      color: colors[Math.floor(Math.random() * colors.length)]
+      vy: Math.sin(angle) * speed - 0.5,
+      life, maxLife: life,
+      size: type === 'bigExplosion' ? 4 + Math.random() * 6 : 2 + Math.random() * 3,
+      color,
+      spin: (Math.random() - 0.5) * 0.3,
+      rotation: Math.random() * Math.PI * 2
     });
   }
 }
@@ -1375,26 +1582,31 @@ function updateParticles(dt) {
     p.y += p.vy * 60 * dt;
     p.vx *= 0.96;
     p.vy *= 0.96;
-    p.vy += 0.05; // гравитация
+    p.vy += 0.08;
     p.life -= dt;
+    p.rotation += p.spin;
   }
   G.particles = G.particles.filter(p => p.life > 0);
 }
 
 function drawParticles(ctx) {
   for (const p of G.particles) {
-    const alpha = p.life / p.maxLife;
+    const alpha = Math.min(1, p.life / p.maxLife * 2);
     ctx.globalAlpha = alpha;
     ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
-    ctx.fill();
+
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rotation);
+    const size = p.size * (0.4 + alpha * 0.6);
+    ctx.fillRect(-size/2, -size/2, size, size);
+    ctx.restore();
   }
   ctx.globalAlpha = 1;
 }
 
 // ===================================================
-// КАРТА И СТЕНЫ
+// КАРТА
 // ===================================================
 function loadMap(index) {
   G.map = MAPS[index].map(row => row.slice());
@@ -1402,6 +1614,7 @@ function loadMap(index) {
 }
 
 function drawMap(ctx) {
+  // Пол
   for (let r = 0; r < MAP_SIZE; r++) {
     for (let c = 0; c < MAP_SIZE; c++) {
       const cell = G.map[r][c];
@@ -1409,11 +1622,28 @@ function drawMap(ctx) {
       const y = r * TILE_SIZE;
 
       if (cell === CELL_EMPTY) {
-        ctx.fillStyle = (r + c) % 2 === 0 ? '#1a2030' : '#161c2a';
+        // Пол с текстурой
+        const grad = ctx.createLinearGradient(x, y, x + TILE_SIZE, y + TILE_SIZE);
+        if ((r + c) % 2 === 0) {
+          grad.addColorStop(0, '#1e2438');
+          grad.addColorStop(1, '#181d30');
+        } else {
+          grad.addColorStop(0, '#181d30');
+          grad.addColorStop(1, '#13182a');
+        }
+        ctx.fillStyle = grad;
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        ctx.strokeStyle = 'rgba(79,195,247,0.05)';
+
+        // Сетка
+        ctx.strokeStyle = 'rgba(79,195,247,0.06)';
         ctx.lineWidth = 1;
         ctx.strokeRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
+
+        // Уголки-маркеры
+        if ((r + c) % 4 === 0) {
+          ctx.fillStyle = 'rgba(79,195,247,0.15)';
+          ctx.fillRect(x + 2, y + 2, 3, 3);
+        }
       } else if (cell === CELL_WALL) {
         drawWall(ctx, x, y, G.mapHP[r][c], false);
       } else if (cell === CELL_STEEL) {
@@ -1421,44 +1651,69 @@ function drawMap(ctx) {
       }
     }
   }
+
+  // Следы гусениц поверх пола
+  for (const t of G.treads) {
+    ctx.globalAlpha = t.life * 0.4;
+    ctx.fillStyle = '#0a0a14';
+    ctx.fillRect(t.x - 2, t.y - 2, 4, 4);
+  }
+  ctx.globalAlpha = 1;
 }
 
 function drawWall(ctx, x, y, hp, isSteel) {
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.fillRect(x + 3, y + 3, TILE_SIZE, TILE_SIZE);
+  // Тень
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.filter = 'blur(2px)';
+  ctx.fillRect(x + 4, y + 4, TILE_SIZE, TILE_SIZE);
+  ctx.filter = 'none';
 
   if (isSteel) {
     const grad = ctx.createLinearGradient(x, y, x + TILE_SIZE, y + TILE_SIZE);
-    grad.addColorStop(0, '#7a8a9a');
-    grad.addColorStop(0.5, '#5a6a7a');
-    grad.addColorStop(1, '#3a4a5a');
+    grad.addColorStop(0, '#8a9aaa');
+    grad.addColorStop(0.3, '#6a7a8a');
+    grad.addColorStop(0.7, '#4a5a6a');
+    grad.addColorStop(1, '#2a3a4a');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-    ctx.fillStyle = '#2a3a4a';
-    for (const [dx, dy] of [[7,7], [TILE_SIZE-10,7], [7,TILE_SIZE-10], [TILE_SIZE-10,TILE_SIZE-10]]) {
+    // Панель внутри
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+
+    // Болты
+    ctx.fillStyle = '#1a2a3a';
+    for (const [dx, dy] of [[8,8], [TILE_SIZE-11,8], [8,TILE_SIZE-11], [TILE_SIZE-11,TILE_SIZE-11]]) {
       ctx.beginPath();
-      ctx.arc(x + dx, y + dy, 2.5, 0, Math.PI * 2);
+      ctx.arc(x + dx, y + dy, 3, 0, Math.PI * 2);
       ctx.fill();
+      // Блик болта
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.beginPath();
+      ctx.arc(x + dx - 1, y + dy - 1, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1a2a3a';
     }
 
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    // Верхний блик
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
     ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, 3);
   } else {
-    // Разрушаемость влияет на прозрачность/цвет
     const damage = 1 - (hp / WALL_HP_MAX);
-    const r = 193 - damage * 80;
-    const g = 122 - damage * 60;
-    const b = 63 - damage * 40;
+    const r = Math.round(200 - damage * 100);
+    const g = Math.round(130 - damage * 70);
+    const b = Math.round(60 - damage * 40);
 
     const grad = ctx.createLinearGradient(x, y, x, y + TILE_SIZE);
     grad.addColorStop(0, `rgb(${r},${g},${b})`);
-    grad.addColorStop(1, `rgb(${Math.max(r-60,0)},${Math.max(g-40,0)},${Math.max(b-30,0)})`);
+    grad.addColorStop(0.5, `rgb(${Math.max(r-30,0)},${Math.max(g-20,0)},${Math.max(b-15,0)})`);
+    grad.addColorStop(1, `rgb(${Math.max(r-70,0)},${Math.max(g-50,0)},${Math.max(b-30,0)})`);
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
-    ctx.lineWidth = 1.5;
+    // Кирпичики
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1.8;
 
     for (let i = 1; i < 4; i++) {
       ctx.beginPath();
@@ -1481,55 +1736,60 @@ function drawWall(ctx, x, y, hp, isSteel) {
     }
 
     // Трещины при повреждении
-    if (damage > 0.3) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-      ctx.lineWidth = 1.5;
+    if (damage > 0.25) {
+      ctx.strokeStyle = 'rgba(20,10,0,0.7)';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(x + 5, y + 8);
-      ctx.lineTo(x + 15, y + 20);
-      ctx.lineTo(x + 10, y + 30);
+      ctx.moveTo(x + 6, y + 6);
+      ctx.lineTo(x + 14, y + 18);
+      ctx.lineTo(x + 10, y + 28);
+      ctx.stroke();
+    }
+    if (damage > 0.6) {
+      ctx.strokeStyle = 'rgba(20,10,0,0.75)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x + TILE_SIZE - 6, y + 10);
+      ctx.lineTo(x + TILE_SIZE - 14, y + 20);
+      ctx.lineTo(x + TILE_SIZE - 8, y + 32);
       ctx.stroke();
     }
 
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    // Верхний блик
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, 2);
   }
 
-  ctx.strokeStyle = isSteel ? '#2a3a4a' : '#5a2a10';
-  ctx.lineWidth = 1;
+  // Обводка
+  ctx.strokeStyle = isSteel ? 'rgba(20,30,40,0.9)' : 'rgba(60,30,10,0.9)';
+  ctx.lineWidth = 1.5;
   ctx.strokeRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
 }
 
 // ===================================================
-// ТАНКИ — СОЗДАНИЕ
+// СОЗДАНИЕ ТАНКОВ
 // ===================================================
 function createTanks() {
-  const controls1 = {
-    up: 'w', down: 's', left: 'a', right: 'd', shoot: ' '
-  };
-  const controls2 = {
-    up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright', shoot: 'enter'
-  };
+  // На тач-устройствах даём джойстики, на ПК — клавиатуру
+  const isTouch = DeviceInfo.isTouch;
+  
+  const controls1 = isTouch
+    ? { up: 'joy1_up', down: 'joy1_down', left: 'joy1_left', right: 'joy1_right', shoot: 'joy_shoot1' }
+    : { up: 'w', down: 's', left: 'a', right: 'd', shoot: ' ' };
 
-  const touchControls1 = {
-    up: 'joy1_up', down: 'joy1_down', left: 'joy1_left', right: 'joy1_right', shoot: 'joy_shoot1'
-  };
-  const touchControls2 = {
-    up: 'joy2_up', down: 'joy2_down', left: 'joy2_left', right: 'joy2_right', shoot: 'joy_shoot2'
-  };
+  const controls2 = isTouch
+    ? { up: 'joy2_up', down: 'joy2_down', left: 'joy2_left', right: 'joy2_right', shoot: 'joy_shoot2' }
+    : { up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright', shoot: 'enter' };
 
-  const c1 = DeviceInfo.isTouch ? touchControls1 : controls1;
-  const c2 = DeviceInfo.isTouch ? touchControls2 : controls2;
-
-  const mapIndex = Math.floor(Math.random() * MAPS.length);
-  loadMap(mapIndex);
+  // Для онлайна: мой танк читает input только если его роль совпадает
+  // В соло — оба танка читают input (у каждого свои кнопки)
 
   G.tanks = {
     p1: new Tank('p1', TILE_SIZE * 1.5, TILE_SIZE * 1.5, Math.PI / 4,
-      { main: '#4fc3f7', dark: '#0288d1', light: '#81d4fa' }, c1),
+      { main: '#4fc3f7', dark: '#0288d1', light: '#81d4fa' }, controls1),
     p2: new Tank('p2', CANVAS_SIZE - TILE_SIZE * 1.5, CANVAS_SIZE - TILE_SIZE * 1.5,
       -Math.PI * 3 / 4,
-      { main: '#ff6b6b', dark: '#cc0000', light: '#ff9999' }, c2)
+      { main: '#ff6b6b', dark: '#cc0000', light: '#ff9999' }, controls2)
   };
 }
 
@@ -1546,10 +1806,12 @@ function gameLoop(timestamp) {
   requestAnimationFrame(gameLoop);
 }
 
+let engineWasPlaying = false;
+
 function update(dt) {
   Input.updateVirtualKeys();
 
-  // Кнопка огня на телефоне маппится на shoot
+  // Эмулируем "выстрел" для touch — устанавливаем виртуальные клавиши
   if (DeviceInfo.isTouch) {
     Input.keys['joy_shoot1'] = Input.fireBtnPressed;
     Input.keys['joy_shoot2'] = Input.fireBtnPressed;
@@ -1561,16 +1823,49 @@ function update(dt) {
     updateBullets(dt);
     updateParticles(dt);
 
-    // Синхронизация в онлайне
+    // Обновляем следы
+    for (const t of G.treads) t.life -= dt * 0.3;
+    G.treads = G.treads.filter(t => t.life > 0);
+
+    // Звук двигателя
+    if (Sound.enabled && Sound.ctx) {
+      const myTank = G.mode === 'solo' 
+        ? { speed: Math.max(G.tanks.p1.speedFactor, G.tanks.p2.speedFactor) }
+        : G.tanks[G.myRole];
+      const speed = myTank ? myTank.speedFactor : 0;
+      
+      if (!engineWasPlaying) {
+        Sound.startEngine();
+        engineWasPlaying = true;
+      }
+      Sound.updateEngine(speed);
+
+      // Следы гусениц от моего танка
+      if (speed > 0.3) {
+        const t = G.mode === 'solo' ? G.tanks.p1 : G.tanks[G.myRole];
+        if (t && t.alive) {
+          if (Math.random() < 0.6) {
+            G.treads.push({ x: t.x - Math.sin(t.angle) * 8, y: t.y + Math.cos(t.angle) * 8, life: 1 });
+            G.treads.push({ x: t.x + Math.sin(t.angle) * 8, y: t.y - Math.cos(t.angle) * 8, life: 1 });
+          }
+        }
+      }
+    }
+
+    // Синхронизация
     if (G.mode === 'online' && G.connected) {
       const now = performance.now();
-      if (now - G.lastSyncTime > 50) {   // 20 раз в секунду
+      if (now - G.lastSyncTime > 50) {
         G.lastSyncTime = now;
         sendState();
       }
     }
   } else {
     updateParticles(dt);
+    if (engineWasPlaying) {
+      Sound.stopEngine();
+      engineWasPlaying = false;
+    }
   }
 }
 
@@ -1578,7 +1873,14 @@ function render() {
   const ctx = G.ctx;
   if (!ctx) return;
 
-  ctx.fillStyle = '#0f1420';
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // Фон
+  const bgGrad = ctx.createLinearGradient(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+  bgGrad.addColorStop(0, '#0f1420');
+  bgGrad.addColorStop(1, '#0a0e18');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
   if (G.map && G.map.length > 0) {
@@ -1593,7 +1895,7 @@ function render() {
 }
 
 // ===================================================
-// СЕТЬ (PeerJS)
+// СЕТЬ
 // ===================================================
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1612,10 +1914,7 @@ function createRoom() {
   const base = window.location.origin + window.location.pathname;
   document.getElementById('linkInput').value = `${base}?room=${G.roomCode}`;
 
-  G.peer = new Peer('tanks-' + G.roomCode, {
-    debug: 1,
-    config: ICE_SERVERS
-  });
+  G.peer = new Peer('tanks-' + G.roomCode, { debug: 1, config: ICE_SERVERS });
 
   G.peer.on('open', () => {
     document.getElementById('waitingText').textContent = '⏳ Ожидание друга...';
@@ -1700,37 +1999,36 @@ function sendState() {
     x: t.x, y: t.y,
     angle: t.angle, turretAngle: t.turretAngle,
     trackOffset: t.trackOffset,
-    alive: t.alive
+    alive: t.alive,
+    recoil: t.recoil
   });
 }
 
 function handleNetMessage(msg) {
   switch (msg.type) {
     case 'state': {
-      const opponentRole = G.myRole === 'p1' ? 'p2' : 'p1';
-      const opponent = G.tanks[opponentRole];
-      if (opponent) {
-        opponent.x = msg.x;
-        opponent.y = msg.y;
-        opponent.angle = msg.angle;
-        opponent.turretAngle = msg.turretAngle;
-        opponent.trackOffset = msg.trackOffset;
-        opponent.alive = msg.alive;
+      const opp = G.myRole === 'p1' ? 'p2' : 'p1';
+      const o = G.tanks[opp];
+      if (o) {
+        // Плавно интерполируем
+        o.x += (msg.x - o.x) * 0.5;
+        o.y += (msg.y - o.y) * 0.5;
+        o.angle = msg.angle;
+        o.turretAngle = msg.turretAngle;
+        o.trackOffset = msg.trackOffset;
+        o.alive = msg.alive;
+        o.recoil = msg.recoil || 0;
       }
       break;
     }
     case 'shot': {
-      const angle = msg.angle;
-      const bullet = {
+      G.bullets.push({
         x: msg.x, y: msg.y,
-        vx: Math.sin(angle) * BULLET_SPEED,
-        vy: -Math.cos(angle) * BULLET_SPEED,
+        vx: Math.sin(msg.angle) * BULLET_SPEED,
+        vy: -Math.cos(msg.angle) * BULLET_SPEED,
         owner: G.myRole === 'p1' ? 'p2' : 'p1',
-        bounces: 0,
-        alive: true,
-        trail: []
-      };
-      G.bullets.push(bullet);
+        bounces: 0, alive: true, trail: []
+      });
       Sound.playShoot();
       spawnParticles(msg.x, msg.y, 'muzzle');
       break;
@@ -1747,18 +2045,18 @@ function handleNetMessage(msg) {
       break;
     }
     case 'hit': {
-      // Нас убили
       const myTank = G.tanks[G.myRole];
-      if (myTank) {
-        killTank(myTank, msg.killer);
-      }
+      if (myTank) killTank(myTank, msg.killer);
+      break;
+    }
+    case 'map': {
+      loadMap(msg.index);
+      createTanks();
       break;
     }
     case 'restart': {
-      startOnlineGame();
-      break;
-    }
-    case 'next-round': {
+      G.score = { p1: 0, p2: 0 };
+      updateScoreDisplay();
       nextRoundLocal();
       break;
     }
@@ -1769,33 +2067,38 @@ function startOnlineGame() {
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   G.phase = 'playing';
   G.score = { p1: 0, p2: 0 };
-  G.round = 1;
   updateScoreDisplay();
 
-  // Загружаем карту — host генерирует, отправляет гостю
   if (G.isHost) {
     const mapIndex = Math.floor(Math.random() * MAPS.length);
     loadMap(mapIndex);
     sendMessage({ type: 'map', index: mapIndex });
   } else {
-    // Гость ждёт карту от хоста
     loadMap(0);
   }
-
+  
+  // Создаём танки заново с учётом роли
   createTanks();
+
   G.bullets = [];
   G.particles = [];
+  G.treads = [];
 
-  // Показываем мой танк как p1, если я p1
+  // Имена
   document.getElementById('name1').textContent = G.myRole === 'p1' ? 'ВЫ' : 'ПРОТИВНИК';
   document.getElementById('name2').textContent = G.myRole === 'p2' ? 'ВЫ' : 'ПРОТИВНИК';
 
-  document.getElementById('score1Box').classList.toggle('p1', G.myRole === 'p1');
-  document.getElementById('score2Box').classList.toggle('p2', G.myRole === 'p2');
+  // Стартуем звук двигателя
+  Sound.startEngine();
+  engineWasPlaying = true;
 
   showNotification('🎯 БОЙ!');
+  vibrate(50);
 }
 
+// ===================================================
+// UI ФУНКЦИИ
+// ===================================================
 function showCreateScreen() {
   Sound.playClick();
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
@@ -1816,6 +2119,8 @@ function showJoinScreen() {
 }
 
 function backToMenu() {
+  Sound.stopEngine();
+  engineWasPlaying = false;
   if (G.peer) { try { G.peer.destroy(); } catch(e){} }
   if (G.conn) { try { G.conn.close(); } catch(e){} }
   G.peer = null; G.conn = null; G.connected = false;
@@ -1834,31 +2139,29 @@ function copyLink() {
     document.execCommand('copy');
     showNotification('✅ Скопировано!');
   }
+  Sound.playClick();
 }
 
-// ===================================================
-// РЕЖИМ SOLO
-// ===================================================
 function startSoloMode() {
   Sound.playClick();
   G.mode = 'solo';
-  document.body.classList.add('solo-mode');
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   G.phase = 'playing';
   G.score = { p1: 0, p2: 0 };
-  G.round = 1;
   updateScoreDisplay();
   createTanks();
   G.bullets = [];
   G.particles = [];
+  G.treads = [];
   document.getElementById('name1').textContent = 'P1';
   document.getElementById('name2').textContent = 'P2';
+  Sound.startEngine();
+  engineWasPlaying = true;
+  showNotification('🎯 БОЙ!');
 }
 
-// ===================================================
-// РАУНДЫ И ПЕРЕЗАПУСК
-// ===================================================
 function nextRound() {
+  Sound.playClick();
   document.getElementById('roundScreen').classList.add('hidden');
   nextRoundLocal();
 }
@@ -1867,6 +2170,7 @@ function nextRoundLocal() {
   G.phase = 'playing';
   G.bullets = [];
   G.particles = [];
+  G.treads = [];
 
   const mapIndex = Math.floor(Math.random() * MAPS.length);
   loadMap(mapIndex);
@@ -1875,26 +2179,88 @@ function nextRoundLocal() {
   if (G.mode === 'online' && G.isHost) {
     sendMessage({ type: 'map', index: mapIndex });
   }
+
+  Sound.startEngine();
+  engineWasPlaying = true;
 }
 
 function restartMatch() {
+  Sound.playClick();
   document.getElementById('gameoverScreen').classList.add('hidden');
   G.score = { p1: 0, p2: 0 };
-  G.round = 1;
   updateScoreDisplay();
   nextRoundLocal();
-
   if (G.mode === 'online') sendMessage({ type: 'restart' });
+}
+
+function endRound(winnerId) {
+  G.phase = 'roundEnd';
+  Sound.stopEngine();
+  engineWasPlaying = false;
+
+  let title = '🎯 РАУНД';
+  let text = '';
+
+  if (G.mode === 'solo') {
+    title = winnerId === 'p1' ? '🔵 P1 ПОБЕДИЛ!' : '🔴 P2 ПОБЕДИЛ!';
+    text = `Счёт: ${G.score.p1} : ${G.score.p2}`;
+  } else {
+    const iWon = winnerId === G.myRole;
+    const myScore = G.score[G.myRole];
+    const oppScore = G.score[G.myRole === 'p1' ? 'p2' : 'p1'];
+    if (iWon) {
+      title = '🏆 ВЫ ПОБЕДИЛИ!';
+      text = `Счёт: ${myScore} : ${oppScore}`;
+      Sound.playRoundWin();
+    } else {
+      title = '💀 ВЫ ПРОИГРАЛИ';
+      text = `Счёт: ${myScore} : ${oppScore}`;
+      Sound.playRoundLose();
+    }
+  }
+
+  document.getElementById('roundTitle').textContent = title;
+  document.getElementById('roundText').textContent = text;
+  document.getElementById('roundScreen').classList.remove('hidden');
+}
+
+function endGame(winnerId) {
+  G.phase = 'gameover';
+  Sound.stopEngine();
+  engineWasPlaying = false;
+
+  let title = '🏆 ИГРА ОКОНЧЕНА';
+  let text = '';
+
+  if (G.mode === 'solo') {
+    title = winnerId === 'p1' ? '🔵 P1 ПОБЕДИЛ!' : '🔴 P2 ПОБЕДИЛ!';
+    text = `Финальный счёт: ${G.score.p1} : ${G.score.p2}`;
+  } else {
+    const iWon = winnerId === G.myRole;
+    const myScore = G.score[G.myRole];
+    const oppScore = G.score[G.myRole === 'p1' ? 'p2' : 'p1'];
+    if (iWon) {
+      title = '🏆 ВЫ ПОБЕДИЛИ!';
+      text = `Финальный счёт: ${myScore} : ${oppScore}`;
+      Sound.playVictory();
+    } else {
+      title = '💀 ВЫ ПРОИГРАЛИ';
+      text = `Финальный счёт: ${myScore} : ${oppScore}`;
+      Sound.playRoundLose();
+    }
+  }
+
+  document.getElementById('gameoverTitle').textContent = title;
+  document.getElementById('gameoverText').textContent = text;
+  document.getElementById('gameoverScreen').classList.remove('hidden');
 }
 
 function updateScoreDisplay() {
   document.getElementById('score1').textContent = G.score.p1;
-  document.getElementById('score2b').textContent = G.score.p2;
+  document.getElementById('score2').textContent = G.score.p2;
+  document.getElementById('roundNum').textContent = `${G.score.p1} : ${G.score.p2}`;
 }
 
-// ===================================================
-// УВЕДОМЛЕНИЯ
-// ===================================================
 let notifTimer = null;
 function showNotification(text) {
   const n = document.getElementById('notification');
@@ -1904,9 +2270,6 @@ function showNotification(text) {
   notifTimer = setTimeout(() => n.classList.remove('show'), 1500);
 }
 
-// ===================================================
-// CANVAS
-// ===================================================
 function resizeCanvas() {
   const wrap = document.getElementById('canvasWrap');
   const wrapRect = wrap.getBoundingClientRect();
@@ -1918,7 +2281,7 @@ function resizeCanvas() {
 }
 
 // ===================================================
-// ИНИЦИАЛИЗАЦИЯ
+// СТАРТ
 // ===================================================
 window.addEventListener('load', () => {
   G.canvas = document.getElementById('gameCanvas');
