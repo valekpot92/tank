@@ -18,9 +18,6 @@
     touch-action: none;
   }
 
-  /* ================================================================
-     ОСНОВНОЙ КОНТЕЙНЕР
-     ================================================================ */
   #gameWrap {
     position: fixed;
     inset: 0;
@@ -30,7 +27,7 @@
   }
 
   /* ================================================================
-     ВЕРХНЯЯ ПАНЕЛЬ — СЧЁТ И СТАТУС
+     ВЕРХНЯЯ ПАНЕЛЬ
      ================================================================ */
   .topBar {
     display: flex;
@@ -58,11 +55,6 @@
   }
   .player-score.p1 { border-color: #4fc3f7; color: #4fc3f7; }
   .player-score.p2 { border-color: #ff6b6b; color: #ff6b6b; }
-
-  .player-score.active {
-    box-shadow: 0 0 20px currentColor;
-    transform: scale(1.05);
-  }
 
   .player-score .label {
     font-weight: bold;
@@ -106,6 +98,7 @@
       radial-gradient(circle at 30% 20%, rgba(79,195,247,0.08) 0%, transparent 50%),
       radial-gradient(circle at 70% 80%, rgba(255,107,107,0.06) 0%, transparent 50%),
       #0f1420;
+    padding: 10px;
   }
 
   #gameCanvas {
@@ -115,6 +108,8 @@
       0 0 80px rgba(0,0,0,0.8) inset;
     border-radius: 4px;
     touch-action: none;
+    max-width: 100%;
+    max-height: 100%;
   }
 
   /* ================================================================
@@ -176,7 +171,7 @@
   }
 
   /* ================================================================
-     ИНСТРУКЦИИ УПРАВЛЕНИЯ (на ПК)
+     ПОДСКАЗКА УПРАВЛЕНИЯ (ПК)
      ================================================================ */
   .controls-hint {
     position: fixed;
@@ -193,20 +188,15 @@
     border: 1px solid rgba(255,255,255,0.1);
     white-space: nowrap;
     pointer-events: none;
-    animation: fade-in 1s ease-out;
-  }
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
 
   /* ================================================================
-     ЭКРАН-СООБЩЕНИЕ (для пауз и старта)
+     ОВЕРЛЕЙ (старт, пауза)
      ================================================================ */
   .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.88);
     backdrop-filter: blur(6px);
     display: flex;
     flex-direction: column;
@@ -215,6 +205,7 @@
     z-index: 100;
     padding: 20px;
     text-align: center;
+    overflow-y: auto;
   }
   .overlay.hidden { display: none; }
 
@@ -282,6 +273,8 @@
     padding: 8px 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
     font-size: 0.9em;
+    gap: 10px;
+    flex-wrap: wrap;
   }
   .controls-info .row:last-child { border-bottom: none; }
   .controls-info .key {
@@ -292,36 +285,17 @@
     font-family: monospace;
     color: #4fc3f7;
     font-weight: bold;
+    display: inline-block;
+    margin: 1px;
   }
   .controls-info .p1 { color: #4fc3f7; }
   .controls-info .p2 { color: #ff6b6b; }
 
-  /* Кнопка паузы */
-  .pause-btn {
-    position: absolute;
-    top: calc(8px + env(safe-area-inset-top));
-    right: 10px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.5);
-    border: 2px solid rgba(255,255,255,0.2);
-    color: #fff;
-    font-size: 1.2em;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 20;
-    transition: all 0.3s;
-  }
-
   /* ================================================================
-     АДАПТАЦИЯ ПОД ТЕЛЕФОН
+     АДАПТАЦИЯ
      ================================================================ */
   body.is-mobile .joystick { display: block; }
   body.is-mobile .controls-hint { display: none; }
-  body.is-mobile .pause-btn { display: flex; }
 
   @media (max-width: 600px) {
     .topBar { padding: 6px 10px; }
@@ -349,7 +323,6 @@
 <body>
 
 <div id="gameWrap">
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
   <div class="topBar">
     <div class="player-score p1" id="score1Box">
       <span class="label">🔵 P1</span>
@@ -365,52 +338,48 @@
     </div>
   </div>
 
-  <!-- ИГРОВОЕ ПОЛЕ -->
   <div id="canvasWrap">
     <canvas id="gameCanvas"></canvas>
   </div>
 </div>
 
-<!-- КНОПКА ПАУЗЫ (мобильные) -->
-<div class="pause-btn" id="pauseBtn">⏸</div>
-
 <!-- МОБИЛЬНЫЕ ДЖОЙСТИКИ -->
 <div class="joystick left" id="joyLeft">
   <div class="stick" id="stickLeft"></div>
-  <div class="label">Движение</div>
+  <div class="label">P1 — движение</div>
 </div>
 <div class="joystick right" id="joyRight">
   <div class="stick" id="stickRight"></div>
-  <div class="label">Прицел / Огонь</div>
+  <div class="label">P2 — движение</div>
 </div>
 
-<!-- ИНСТРУКЦИЯ УПРАВЛЕНИЯ (ПК) -->
+<!-- ПОДСКАЗКА НА ПК -->
 <div class="controls-hint" id="hint">
-  🔵 WASD + ПРОБЕЛ &nbsp;|&nbsp; 🔴 Стрелки + ENTER
+  🔵 WASD &nbsp;|&nbsp; 🔴 Стрелки
 </div>
 
 <!-- ЭКРАН СТАРТА -->
 <div class="overlay" id="startScreen">
   <h1>🎮 ТАНЧИКИ</h1>
-  <p>Онлайн-игра для двоих</p>
+  <p>Демо-версия. Играй двумя танками на одном устройстве</p>
 
   <div class="controls-info">
     <h3>⚙ УПРАВЛЕНИЕ</h3>
     <div class="row">
       <span class="p1">🔵 Игрок 1</span>
-      <span><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> + <span class="key">Пробел</span></span>
+      <span><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span></span>
     </div>
     <div class="row">
       <span class="p2">🔴 Игрок 2</span>
-      <span><span class="key">↑</span> <span class="key">←</span> <span class="key">↓</span> <span class="key">→</span> + <span class="key">Enter</span></span>
+      <span><span class="key">↑</span> <span class="key">←</span> <span class="key">↓</span> <span class="key">→</span></span>
     </div>
     <div class="row">
-      <span>📱 На телефоне</span>
-      <span>Левый джойстик — движение, правый — прицел и огонь</span>
+      <span>📱 Телефон</span>
+      <span>Левый джойстик = P1, правый = P2</span>
     </div>
   </div>
 
-  <button onclick="startDemo()">🚀 ПРОБНЫЙ БОЙ (без сети)</button>
+  <button onclick="startGame()">🚀 НАЧАТЬ БОЙ</button>
 </div>
 
 <script>
@@ -430,48 +399,35 @@ if (DeviceInfo.isMobile) document.body.classList.add('is-mobile');
 if (DeviceInfo.isTouch) document.body.classList.add('is-touch');
 
 // ===================================================
-// КОНСТАНТЫ ИГРЫ
+// КОНСТАНТЫ
 // ===================================================
-const TILE_SIZE = 40;              // размер клетки в пикселях
-const MAP_SIZE = 15;                // карта 15x15 клеток
-const CANVAS_SIZE = TILE_SIZE * MAP_SIZE; // 600x600
-const TANK_SIZE = 30;               // размер танка
-const TANK_SPEED = 2.2;             // пикселей за кадр
-const TANK_ROT_SPEED = 0.06;        // радиан за кадр (для поворота корпуса)
-const TURRET_ROT_SPEED = 0.08;      // скорость поворота башни
-const WALL_HP = 3;                  // HP стенки (2-3 попадания и разрушается)
+const TILE_SIZE = 40;
+const MAP_SIZE = 15;
+const CANVAS_SIZE = TILE_SIZE * MAP_SIZE;   // 600x600
+const TANK_SIZE = 30;
+const TANK_SPEED = 2.0;
 
-// Типы клеток
 const CELL_EMPTY = 0;
-const CELL_WALL  = 1;               // разрушаемая стена
-const CELL_STEEL = 2;               // неразрушаемая стена (границы)
+const CELL_WALL  = 1;     // разрушаемая
+const CELL_STEEL = 2;     // неразрушаемая
 
 // ===================================================
-// СОСТОЯНИЕ ИГРЫ
+// СОСТОЯНИЕ
 // ===================================================
 const G = {
-  phase: 'menu',                    // menu | playing | paused | gameover
-  map: [],                          // 2D массив клеток
-  tanks: {},                        // { p1: {...}, p2: {...} }
-  bullets: [],                      // снаряды
-  particles: [],                    // частицы (искры, дым)
-  score: { p1: 0, p2: 0 },
-  round: 1,
-  maxScore: 5,
+  phase: 'menu',
+  map: [],
+  tanks: {},
   canvas: null,
   ctx: null,
-  lastTime: 0,
-  currentMapIndex: 0
+  lastTime: 0
 };
 
 // ===================================================
 // КАРТЫ
 // ===================================================
-// 0 = пусто, 1 = разрушаемая стена, 2 = неразрушаемая (граница)
-// Размер 15x15
-
 const MAPS = [
-  // КАРТА 1 — «Крест»
+  // Карта 1 — «Крест»
   [
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
     [2,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
@@ -489,8 +445,7 @@ const MAPS = [
     [2,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
   ],
-
-  // КАРТА 2 — «Лабиринт»
+  // Карта 2 — «Лабиринт»
   [
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
     [2,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
@@ -508,8 +463,7 @@ const MAPS = [
     [2,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
   ],
-
-  // КАРТА 3 — «Арена»
+  // Карта 3 — «Арена»
   [
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
     [2,0,0,0,0,1,0,0,0,1,0,0,0,0,2],
@@ -530,209 +484,10 @@ const MAPS = [
 ];
 
 // ===================================================
-// КЛАСС ТАНКА
-// ===================================================
-class Tank {
-  constructor(id, x, y, angle, color, controls) {
-    this.id = id;                 // 'p1' или 'p2'
-    this.x = x;
-    this.y = y;
-    this.angle = angle;           // угол корпуса (радианы)
-    this.turretAngle = angle;     // угол башни (радианы)
-    this.color = color;           // основной цвет
-    this.controls = controls;     // объект { up, down, left, right, shoot, turretCW, turretCCW }
-    this.alive = true;
-    this.vx = 0;                  // скорость по X
-    this.vy = 0;                  // скорость по Y
-    this.trackOffset = 0;         // смещение гусениц для анимации
-    this.hp = 1;                  // 1 удар = смерть
-  }
-
-  update(dt) {
-    if (!this.alive) return;
-
-    const keys = Input.keys;
-
-    // Движение — WASD или стрелки
-    let forward = 0;
-    if (keys[this.controls.up]) forward += 1;
-    if (keys[this.controls.down]) forward -= 1;
-
-    let strafe = 0;
-    if (keys[this.controls.left]) strafe -= 1;
-    if (keys[this.controls.right]) strafe += 1;
-
-    // Поворот корпуса и движение
-    if (forward !== 0 || strafe !== 0) {
-      // Угол движения относительно текущего поворота корпуса
-      const moveAngle = this.angle + Math.atan2(strafe, forward);
-      const speed = TANK_SPEED * (forward !== 0 ? 1 : 0.7) * (strafe !== 0 ? 1 : 0);
-
-      // Плавное движение
-      this.vx = Math.sin(moveAngle) * TANK_SPEED * (forward !== 0 ? forward : 0.7 * strafe);
-      this.vy = -Math.cos(moveAngle) * TANK_SPEED * (forward !== 0 ? forward : 0.7 * strafe);
-
-      // Проверка коллизий — двигаем по осям отдельно
-      const newX = this.x + this.vx;
-      const newY = this.y + this.vy;
-
-      if (!this.collidesWithWalls(newX, this.y)) {
-        this.x = newX;
-      }
-      if (!this.collidesWithWalls(this.x, newY)) {
-        this.y = newY;
-      }
-
-      // Анимация гусениц
-      this.trackOffset += Math.abs(forward) * 0.15 + Math.abs(strafe) * 0.1;
-    } else {
-      this.vx = 0;
-      this.vy = 0;
-    }
-
-    // Поворот башни (независимо от корпуса)
-    let turretDir = 0;
-    if (keys[this.controls.turretCCW]) turretDir -= 1;
-    if (keys[this.controls.turretCW]) turretDir += 1;
-
-    // На ПК — мышью
-    if (!DeviceInfo.isTouch && this.id === 'p1') {
-      const mouse = Input.mouse;
-      if (mouse.active) {
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const targetAngle = Math.atan2(dy, dx) + Math.PI / 2;
-        let diff = targetAngle - this.turretAngle;
-        while (diff > Math.PI) diff -= 2 * Math.PI;
-        while (diff < -Math.PI) diff += 2 * Math.PI;
-        this.turretAngle += Math.sign(diff) * Math.min(Math.abs(diff), TURRET_ROT_SPEED * 2);
-      }
-    }
-
-    this.turretAngle += turretDir * TURRET_ROT_SPEED;
-
-    // Ограничение границ поля
-    const half = TANK_SIZE / 2;
-    this.x = Math.max(half, Math.min(CANVAS_SIZE - half, this.x));
-    this.y = Math.max(half, Math.min(CANVAS_SIZE - half, this.y));
-
-    // Границы после коллизий
-    this.x = Math.max(half, Math.min(CANVAS_SIZE - half, this.x));
-    this.y = Math.max(half, Math.min(CANVAS_SIZE - half, this.y));
-  }
-
-  collidesWithWalls(x, y) {
-    const half = TANK_SIZE / 2 - 2; // небольшой зазор
-    const corners = [
-      [x - half, y - half],
-      [x + half, y - half],
-      [x - half, y + half],
-      [x + half, y + half]
-    ];
-
-    for (const [cx, cy] of corners) {
-      const col = Math.floor(cx / TILE_SIZE);
-      const row = Math.floor(cy / TILE_SIZE);
-      if (row < 0 || row >= MAP_SIZE || col < 0 || col >= MAP_SIZE) return true;
-      if (G.map[row][col] !== CELL_EMPTY) return true;
-    }
-    return false;
-  }
-
-  // Отрисовка
-  draw(ctx) {
-    if (!this.alive) return;
-
-    ctx.save();
-    ctx.translate(this.x, this.y);
-
-    // === ТЕНЬ ===
-    ctx.save();
-    ctx.rotate(this.angle);
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetX = 3;
-    ctx.shadowOffsetY = 3;
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.fillRect(-TANK_SIZE/2, -TANK_SIZE/2 + 3, TANK_SIZE, TANK_SIZE);
-    ctx.restore();
-
-    // === КОРПУС (с поворотом) ===
-    ctx.save();
-    ctx.rotate(this.angle);
-
-    // Гусеницы (тёмные полосы по бокам)
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(-TANK_SIZE/2, -TANK_SIZE/2, 6, TANK_SIZE);
-    ctx.fillRect(TANK_SIZE/2 - 6, -TANK_SIZE/2, 6, TANK_SIZE);
-
-    // Сегменты гусениц
-    ctx.fillStyle = '#333';
-    const segOffset = (this.trackOffset % 8);
-    for (let i = -TANK_SIZE/2; i < TANK_SIZE/2; i += 8) {
-      ctx.fillRect(-TANK_SIZE/2 + 1, i + segOffset, 4, 4);
-      ctx.fillRect(TANK_SIZE/2 - 5, i + segOffset, 4, 4);
-    }
-
-    // Основной корпус
-    const grad = ctx.createLinearGradient(-TANK_SIZE/2, 0, TANK_SIZE/2, 0);
-    grad.addColorStop(0, this.color.dark);
-    grad.addColorStop(0.5, this.color.main);
-    grad.addColorStop(1, this.color.light);
-    ctx.fillStyle = grad;
-    ctx.fillRect(-TANK_SIZE/2 + 5, -TANK_SIZE/2 + 3, TANK_SIZE - 10, TANK_SIZE - 6);
-
-    // Обводка корпуса
-    ctx.strokeStyle = this.color.dark;
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(-TANK_SIZE/2 + 5, -TANK_SIZE/2 + 3, TANK_SIZE - 10, TANK_SIZE - 6);
-
-    // Детали — полосы на корпусе
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(-TANK_SIZE/2 + 8, 0);
-    ctx.lineTo(TANK_SIZE/2 - 8, 0);
-    ctx.stroke();
-
-    ctx.restore();
-
-    // === БАШНЯ (с независимым поворотом) ===
-    ctx.save();
-    ctx.rotate(this.turretAngle);
-
-    // Основание башни (круг)
-    const turretGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 12);
-    turretGrad.addColorStop(0, this.color.light);
-    turretGrad.addColorStop(1, this.color.dark);
-    ctx.fillStyle = turretGrad;
-    ctx.beginPath();
-    ctx.arc(0, 0, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = this.color.dark;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Ствол пушки
-    ctx.fillStyle = this.color.dark;
-    ctx.fillRect(-3, -TANK_SIZE/2 - 6, 6, TANK_SIZE/2 + 6);
-
-    // Крепление ствола
-    ctx.fillStyle = this.color.main;
-    ctx.fillRect(-5, -TANK_SIZE/2 - 2, 10, 8);
-
-    ctx.restore();
-
-    ctx.restore();
-  }
-}
-
-// ===================================================
-// УПРАВЛЕНИЕ (Input)
+// УПРАВЛЕНИЕ
 // ===================================================
 const Input = {
   keys: {},
-  mouse: { x: 0, y: 0, active: false, down: false },
   joystickLeft: { x: 0, y: 0, active: false, id: null },
   joystickRight: { x: 0, y: 0, active: false, id: null },
 
@@ -741,38 +496,18 @@ const Input = {
     document.addEventListener('keydown', (e) => {
       const k = e.key.toLowerCase();
       this.keys[k] = true;
-      // Пробел и Enter
-      if (e.key === ' ' || e.code === 'Space') this.keys[' '] = true;
-      if (e.key === 'Enter') this.keys['enter'] = true;
 
-      // Стрелки не должны скроллить страницу
       if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) {
         e.preventDefault();
       }
     });
+
     document.addEventListener('keyup', (e) => {
       const k = e.key.toLowerCase();
       this.keys[k] = false;
-      if (e.key === ' ' || e.code === 'Space') this.keys[' '] = false;
-      if (e.key === 'Enter') this.keys['enter'] = false;
     });
 
-    // Мышь для игрока 1
-    if (!DeviceInfo.isTouch) {
-      G.canvas.addEventListener('mousemove', (e) => {
-        const rect = G.canvas.getBoundingClientRect();
-        const scaleX = CANVAS_SIZE / rect.width;
-        const scaleY = CANVAS_SIZE / rect.height;
-        this.mouse.x = (e.clientX - rect.left) * scaleX;
-        this.mouse.y = (e.clientY - rect.top) * scaleY;
-        this.mouse.active = true;
-      });
-      G.canvas.addEventListener('mousedown', () => { this.mouse.down = true; });
-      document.addEventListener('mouseup', () => { this.mouse.down = false; });
-      G.canvas.addEventListener('mouseleave', () => { this.mouse.active = false; });
-    }
-
-    // Джойстики (тач)
+    // Тач-джойстики
     if (DeviceInfo.isTouch) {
       this.setupJoystick('joyLeft', 'stickLeft', 'joystickLeft');
       this.setupJoystick('joyRight', 'stickRight', 'joystickRight');
@@ -784,14 +519,6 @@ const Input = {
     const stick = document.getElementById(stickId);
     const state = this[stateKey];
     const maxDist = 45;
-
-    const onStart = (e) => {
-      e.preventDefault();
-      const t = e.touches ? e.touches[0] : e;
-      state.id = t.identifier;
-      state.active = true;
-      updatePos(t);
-    };
 
     const updatePos = (t) => {
       const rect = joy.getBoundingClientRect();
@@ -812,18 +539,25 @@ const Input = {
       stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
     };
 
-    const onMove = (e) => {
+    joy.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      state.id = t.identifier;
+      state.active = true;
+      updatePos(t);
+    }, { passive: false });
+
+    joy.addEventListener('touchmove', (e) => {
       if (!state.active) return;
       e.preventDefault();
-      const touches = e.touches || [e];
-      for (const t of touches) {
-        if (t.identifier === state.id || !state.id) {
+      for (const t of e.touches) {
+        if (t.identifier === state.id) {
           updatePos(t);
         }
       }
-    };
+    }, { passive: false });
 
-    const onEnd = (e) => {
+    const end = (e) => {
       e.preventDefault();
       state.active = false;
       state.id = null;
@@ -832,41 +566,203 @@ const Input = {
       stick.style.transform = 'translate(-50%, -50%)';
     };
 
-    joy.addEventListener('touchstart', onStart, { passive: false });
-    joy.addEventListener('touchmove', onMove, { passive: false });
-    joy.addEventListener('touchend', onEnd, { passive: false });
-    joy.addEventListener('touchcancel', onEnd, { passive: false });
+    joy.addEventListener('touchend', end, { passive: false });
+    joy.addEventListener('touchcancel', end, { passive: false });
   },
 
-  getPlayerControls(playerId) {
-    if (!DeviceInfo.isTouch) {
-      // ПК — клавиатура
-      if (playerId === 'p1') {
-        return {
-          up: 'w', down: 's', left: 'a', right: 'd',
-          shoot: ' ',
-          turretCW: null, turretCCW: null
-        };
-      } else {
-        return {
-          up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright',
-          shoot: 'enter',
-          turretCW: null, turretCCW: null
-        };
-      }
-    } else {
-      // Мобильные — джойстики (мэппим на клавиши через Input.joystick)
-      return {
-        up: playerId === 'p1' ? 'joy1_up' : 'joy2_up',
-        down: playerId === 'p1' ? 'joy1_down' : 'joy2_down',
-        left: playerId === 'p1' ? 'joy1_left' : 'joy2_left',
-        right: playerId === 'p1' ? 'joy1_right' : 'joy2_right',
-        shoot: playerId === 'p1' ? 'joy1_shoot' : 'joy2_shoot',
-        turretCW: null, turretCCW: null
-      };
-    }
+  updateVirtualKeys() {
+    if (!DeviceInfo.isTouch) return;
+
+    const jl = this.joystickLeft;
+    const jr = this.joystickRight;
+
+    // P1 — левый джойстик
+    this.keys['joy1_up']    = jl.active && jl.y < -0.3;
+    this.keys['joy1_down']  = jl.active && jl.y >  0.3;
+    this.keys['joy1_left']  = jl.active && jl.x < -0.3;
+    this.keys['joy1_right'] = jl.active && jl.x >  0.3;
+
+    // P2 — правый джойстик
+    this.keys['joy2_up']    = jr.active && jr.y < -0.3;
+    this.keys['joy2_down']  = jr.active && jr.y >  0.3;
+    this.keys['joy2_left']  = jr.active && jr.x < -0.3;
+    this.keys['joy2_right'] = jr.active && jr.x >  0.3;
   }
 };
+
+// ===================================================
+// КЛАСС ТАНКА
+// ===================================================
+class Tank {
+  constructor(id, x, y, angle, color, controls) {
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+    this.turretAngle = angle;
+    this.color = color;
+    this.controls = controls;
+    this.alive = true;
+    this.trackOffset = 0;
+    this.vx = 0;
+    this.vy = 0;
+  }
+
+  update(dt) {
+    if (!this.alive) return;
+
+    const keys = Input.keys;
+
+    let forward = 0;
+    if (keys[this.controls.up]) forward += 1;
+    if (keys[this.controls.down]) forward -= 1;
+
+    let strafe = 0;
+    if (keys[this.controls.left]) strafe -= 1;
+    if (keys[this.controls.right]) strafe += 1;
+
+    if (forward !== 0 || strafe !== 0) {
+      // Движение относительно текущего направления корпуса
+      const moveAngle = this.angle + Math.atan2(strafe, forward);
+
+      // Скорость: полная при движении вперёд/назад, медленнее при стрейфе
+      let speedMult = 1;
+      if (forward === 0) speedMult = 0.7;
+
+      this.vx = Math.sin(moveAngle) * TANK_SPEED * speedMult;
+      this.vy = -Math.cos(moveAngle) * TANK_SPEED * speedMult;
+
+      // Двигаем отдельно по осям — для правильных коллизий
+      const newX = this.x + this.vx;
+      const newY = this.y + this.vy;
+
+      if (!this.collides(newX, this.y)) this.x = newX;
+      if (!this.collides(this.x, newY)) this.y = newY;
+
+      // Анимация гусениц
+      this.trackOffset += (Math.abs(forward) + Math.abs(strafe) * 0.7) * 0.15;
+    } else {
+      this.vx = 0;
+      this.vy = 0;
+    }
+
+    // Плавный поворот корпуса в сторону движения (для красоты)
+    if (this.vx !== 0 || this.vy !== 0) {
+      const moveAngle = Math.atan2(this.vx, -this.vy);
+      let diff = moveAngle - this.angle;
+      while (diff > Math.PI) diff -= 2 * Math.PI;
+      while (diff < -Math.PI) diff += 2 * Math.PI;
+      this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.08);
+    }
+
+    // Башня следует за корпусом (пока нет стрельбы)
+    this.turretAngle = this.angle;
+
+    // Ограничение границ поля
+    const half = TANK_SIZE / 2;
+    this.x = Math.max(half, Math.min(CANVAS_SIZE - half, this.x));
+    this.y = Math.max(half, Math.min(CANVAS_SIZE - half, this.y));
+  }
+
+  collides(x, y) {
+    const half = TANK_SIZE / 2 - 2;
+    const corners = [
+      [x - half, y - half],
+      [x + half, y - half],
+      [x - half, y + half],
+      [x + half, y + half]
+    ];
+
+    for (const [cx, cy] of corners) {
+      const col = Math.floor(cx / TILE_SIZE);
+      const row = Math.floor(cy / TILE_SIZE);
+      if (row < 0 || row >= MAP_SIZE || col < 0 || col >= MAP_SIZE) return true;
+      if (G.map[row][col] !== CELL_EMPTY) return true;
+    }
+    return false;
+  }
+
+  draw(ctx) {
+    if (!this.alive) return;
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+
+    // Тень
+    ctx.save();
+    ctx.rotate(this.angle);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(-TANK_SIZE/2 + 2, -TANK_SIZE/2 + 4, TANK_SIZE, TANK_SIZE);
+    ctx.restore();
+
+    // Корпус (поворачивается вместе с направлением движения)
+    ctx.save();
+    ctx.rotate(this.angle);
+
+    // Гусеницы (тёмные по бокам)
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(-TANK_SIZE/2, -TANK_SIZE/2, 7, TANK_SIZE);
+    ctx.fillRect(TANK_SIZE/2 - 7, -TANK_SIZE/2, 7, TANK_SIZE);
+
+    // Сегменты гусениц
+    ctx.fillStyle = '#3a3a3a';
+    const segOffset = (this.trackOffset % 8);
+    for (let i = -TANK_SIZE/2; i < TANK_SIZE/2 - 3; i += 8) {
+      ctx.fillRect(-TANK_SIZE/2 + 1, i + segOffset, 5, 4);
+      ctx.fillRect(TANK_SIZE/2 - 6, i + segOffset, 5, 4);
+    }
+
+    // Основной корпус с градиентом
+    const grad = ctx.createLinearGradient(-TANK_SIZE/2, 0, TANK_SIZE/2, 0);
+    grad.addColorStop(0, this.color.dark);
+    grad.addColorStop(0.5, this.color.main);
+    grad.addColorStop(1, this.color.light);
+    ctx.fillStyle = grad;
+    ctx.fillRect(-TANK_SIZE/2 + 6, -TANK_SIZE/2 + 3, TANK_SIZE - 12, TANK_SIZE - 6);
+
+    // Обводка корпуса
+    ctx.strokeStyle = this.color.dark;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(-TANK_SIZE/2 + 6, -TANK_SIZE/2 + 3, TANK_SIZE - 12, TANK_SIZE - 6);
+
+    // Детали
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-TANK_SIZE/2 + 9, 0);
+    ctx.lineTo(TANK_SIZE/2 - 9, 0);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Башня
+    ctx.save();
+    ctx.rotate(this.turretAngle);
+
+    const turretGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 12);
+    turretGrad.addColorStop(0, this.color.light);
+    turretGrad.addColorStop(1, this.color.dark);
+    ctx.fillStyle = turretGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = this.color.dark;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Ствол
+    ctx.fillStyle = this.color.dark;
+    ctx.fillRect(-3, -TANK_SIZE/2 - 6, 6, TANK_SIZE/2 + 6);
+
+    // Крепление
+    ctx.fillStyle = this.color.main;
+    ctx.fillRect(-5, -TANK_SIZE/2 - 2, 10, 8);
+
+    ctx.restore();
+
+    ctx.restore();
+  }
+}
 
 // ===================================================
 // РИСОВАНИЕ КАРТЫ
@@ -879,12 +775,10 @@ function drawMap(ctx) {
       const y = r * TILE_SIZE;
 
       if (cell === CELL_EMPTY) {
-        // Пол — тёмный с лёгкой текстурой
         ctx.fillStyle = (r + c) % 2 === 0 ? '#1a2030' : '#161c2a';
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-        // Тонкая сетка
-        ctx.strokeStyle = 'rgba(79,195,247,0.04)';
+        ctx.strokeStyle = 'rgba(79,195,247,0.05)';
         ctx.lineWidth = 1;
         ctx.strokeRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
       } else if (cell === CELL_WALL) {
@@ -902,7 +796,6 @@ function drawWall(ctx, x, y, isSteel) {
   ctx.fillRect(x + 3, y + 3, TILE_SIZE, TILE_SIZE);
 
   if (isSteel) {
-    // Неразрушаемая стальная стена
     const grad = ctx.createLinearGradient(x, y, x + TILE_SIZE, y + TILE_SIZE);
     grad.addColorStop(0, '#7a8a9a');
     grad.addColorStop(0.5, '#5a6a7a');
@@ -910,27 +803,23 @@ function drawWall(ctx, x, y, isSteel) {
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-    // Болты по углам
     ctx.fillStyle = '#2a3a4a';
-    for (const [dx, dy] of [[5,5], [TILE_SIZE-8,5], [5,TILE_SIZE-8], [TILE_SIZE-8,TILE_SIZE-8]]) {
+    for (const [dx, dy] of [[7,7], [TILE_SIZE-10,7], [7,TILE_SIZE-10], [TILE_SIZE-10,TILE_SIZE-10]]) {
       ctx.beginPath();
-      ctx.arc(x + dx + 1.5, y + dy + 1.5, 2, 0, Math.PI * 2);
+      ctx.arc(x + dx, y + dy, 2.5, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Блик сверху
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
     ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, 3);
   } else {
-    // Разрушаемая кирпичная стена
     const grad = ctx.createLinearGradient(x, y, x, y + TILE_SIZE);
     grad.addColorStop(0, '#c17a3f');
     grad.addColorStop(1, '#8a4a20');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-    // Кирпичная кладка
-    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
     ctx.lineWidth = 1.5;
 
     // Горизонтальные линии
@@ -944,9 +833,9 @@ function drawWall(ctx, x, y, isSteel) {
     // Вертикальные линии (в шахматном порядке)
     for (let row = 0; row < 4; row++) {
       const offset = (row % 2) * TILE_SIZE / 4;
-      for (let col = 0; col < 3; col++) {
+      for (let col = 0; col <= 2; col++) {
         const cx = x + offset + col * TILE_SIZE / 2;
-        if (cx > x && cx < x + TILE_SIZE) {
+        if (cx > x + 1 && cx < x + TILE_SIZE - 1) {
           ctx.beginPath();
           ctx.moveTo(cx, y + row * TILE_SIZE / 4);
           ctx.lineTo(cx, y + (row + 1) * TILE_SIZE / 4);
@@ -955,12 +844,11 @@ function drawWall(ctx, x, y, isSteel) {
       }
     }
 
-    // Блик сверху
+    // Блик
     ctx.fillStyle = 'rgba(255,255,255,0.2)';
     ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, 2);
   }
 
-  // Рамка
   ctx.strokeStyle = isSteel ? '#2a3a4a' : '#5a2a10';
   ctx.lineWidth = 1;
   ctx.strokeRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
@@ -970,22 +858,30 @@ function drawWall(ctx, x, y, isSteel) {
 // СОЗДАНИЕ ТАНКОВ
 // ===================================================
 function createTanks() {
+  const tankP1Controls = DeviceInfo.isTouch
+    ? { up: 'joy1_up', down: 'joy1_down', left: 'joy1_left', right: 'joy1_right' }
+    : { up: 'w', down: 's', left: 'a', right: 'd' };
+
+  const tankP2Controls = DeviceInfo.isTouch
+    ? { up: 'joy2_up', down: 'joy2_down', left: 'joy2_left', right: 'joy2_right' }
+    : { up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright' };
+
   G.tanks = {
     p1: new Tank(
       'p1',
       TILE_SIZE * 1.5,
       TILE_SIZE * 1.5,
-      Math.PI / 4,                        // смотрит на юго-восток
+      Math.PI / 4,
       { main: '#4fc3f7', dark: '#0288d1', light: '#81d4fa' },
-      Input.getPlayerControls('p1')
+      tankP1Controls
     ),
     p2: new Tank(
       'p2',
       CANVAS_SIZE - TILE_SIZE * 1.5,
       CANVAS_SIZE - TILE_SIZE * 1.5,
-      -Math.PI * 3 / 4,                   // смотрит на северо-запад
+      -Math.PI * 3 / 4,
       { main: '#ff6b6b', dark: '#cc0000', light: '#ff9999' },
-      Input.getPlayerControls('p2')
+      tankP2Controls
     )
   };
 }
@@ -994,12 +890,11 @@ function createTanks() {
 // ЗАГРУЗКА КАРТЫ
 // ===================================================
 function loadMap(index) {
-  G.currentMapIndex = index;
   G.map = MAPS[index].map(row => row.slice());
 }
 
 // ===================================================
-// ОСНОВНОЙ ИГРОВОЙ ЦИКЛ
+// ИГРОВОЙ ЦИКЛ
 // ===================================================
 function gameLoop(timestamp) {
   const dt = Math.min((timestamp - G.lastTime) / 1000, 0.1);
@@ -1012,49 +907,28 @@ function gameLoop(timestamp) {
 }
 
 function update(dt) {
-  if (G.phase !== 'playing') return;
+  // Виртуальные клавиши от джойстиков
+  Input.updateVirtualKeys();
 
-  // Обновляем джойстики как виртуальные клавиши
-  if (DeviceInfo.isTouch) {
-    updateJoystickKeys();
+  // Танки двигаются всегда (но только в фазе playing)
+  if (G.phase === 'playing') {
+    if (G.tanks.p1) G.tanks.p1.update(dt);
+    if (G.tanks.p2) G.tanks.p2.update(dt);
   }
-
-  // Обновляем танки
-  if (G.tanks.p1) G.tanks.p1.update(dt);
-  if (G.tanks.p2) G.tanks.p2.update(dt);
-
-  // Пока здесь больше ничего — стрельба и коллизии в следующем сообщении
-}
-
-function updateJoystickKeys() {
-  // Левый джойстик = движение p1
-  // Правый джойстик = прицел/стрельба p2 (временно — или для стрельбы)
-  const jl = Input.joystickLeft;
-  const jr = Input.joystickRight;
-
-  // Игрок 1 (левый джойстик — движение)
-  Input.keys['joy1_up']    = jl.active && jl.y < -0.3;
-  Input.keys['joy1_down']  = jl.active && jl.y >  0.3;
-  Input.keys['joy1_left']  = jl.active && jl.x < -0.3;
-  Input.keys['joy1_right'] = jl.active && jl.x >  0.3;
-
-  // Игрок 2 (правый джойстик — тоже движение, но не выстрел)
-  Input.keys['joy2_up']    = jr.active && jr.y < -0.3;
-  Input.keys['joy2_down']  = jr.active && jr.y >  0.3;
-  Input.keys['joy2_left']  = jr.active && jr.x < -0.3;
-  Input.keys['joy2_right'] = jr.active && jr.x >  0.3;
 }
 
 function render() {
   const ctx = G.ctx;
-  ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+  if (!ctx) return;
 
   // Фон
   ctx.fillStyle = '#0f1420';
   ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-  // Карта
-  drawMap(ctx);
+  // Карта (только если загружена)
+  if (G.map && G.map.length > 0) {
+    drawMap(ctx);
+  }
 
   // Танки
   if (G.tanks.p1) G.tanks.p1.draw(ctx);
@@ -1067,20 +941,18 @@ function render() {
 function resizeCanvas() {
   const wrap = document.getElementById('canvasWrap');
   const wrapRect = wrap.getBoundingClientRect();
-
-  // Оставляем квадратный canvas
   const size = Math.min(wrapRect.width, wrapRect.height) - 20;
 
-  G.canvas.width = CANVAS_SIZE;    // всегда 600x600 внутренне
+  G.canvas.width = CANVAS_SIZE;
   G.canvas.height = CANVAS_SIZE;
   G.canvas.style.width = size + 'px';
   G.canvas.style.height = size + 'px';
 }
 
 // ===================================================
-// СТАРТ ИГРЫ (демо-режим без сети)
+// СТАРТ ИГРЫ
 // ===================================================
-function startDemo() {
+function startGame() {
   document.getElementById('startScreen').classList.add('hidden');
 
   // Случайная карта
@@ -1113,7 +985,11 @@ window.addEventListener('load', () => {
 
   Input.init();
 
-  // Запускаем игровой цикл (даже до старта — просто для отрисовки фона)
+  // === ВАЖНО: загружаем карту и танки сразу, чтобы было что рисовать ===
+  loadMap(0);
+  createTanks();
+
+  // Запускаем игровой цикл
   G.lastTime = performance.now();
   requestAnimationFrame(gameLoop);
 });
