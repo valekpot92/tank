@@ -402,7 +402,7 @@
   }
   .notification.show { transform: translate(-50%, -50%) scale(1); }
 
-  /* ============ ЭКРАН МЕЖДУ РАУНДАМИ ============ */
+  /* ============ БАННЕР МЕЖДУ РАУНДАМИ ============ */
   .roundBanner {
     position: fixed;
     top: 50%; left: 50%;
@@ -546,7 +546,7 @@
   </div>
 </div>
 
-<!-- Джойстики и кнопки огня -->
+<!-- Джойстики и кнопки -->
 <div class="mobileJoystick p1" id="joyLeft">
   <div class="arrow up">▲</div>
   <div class="arrow down">▼</div>
@@ -759,14 +759,12 @@ const Sound = {
     } catch(e) {}
   },
 
-  // === НОВЫЙ ЗВУК ВЫСТРЕЛА ===
   playShoot() {
     this.init();
     try {
       if (!this.ctx || !this.enabled) return;
       const t = this.ctx.currentTime;
 
-      // 1. Глубокий удар
       const osc1 = this.ctx.createOscillator();
       osc1.type = 'sine';
       osc1.frequency.setValueAtTime(140, t);
@@ -778,7 +776,6 @@ const Sound = {
       osc1.connect(g1); g1.connect(this.masterGain);
       osc1.start(t); osc1.stop(t + 0.5);
 
-      // 2. Металлический лязг
       const osc2 = this.ctx.createOscillator();
       osc2.type = 'sawtooth';
       osc2.frequency.setValueAtTime(2400, t);
@@ -790,7 +787,6 @@ const Sound = {
       osc2.connect(g2); g2.connect(this.masterGain);
       osc2.start(t); osc2.stop(t + 0.2);
 
-      // 3. Шум пороха
       const size = Math.floor(this.ctx.sampleRate * 0.28);
       const buf = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
       const dd = buf.getChannelData(0);
@@ -809,7 +805,6 @@ const Sound = {
       src.connect(bf); bf.connect(g3); g3.connect(this.masterGain);
       src.start(t); src.stop(t + 0.3);
 
-      // 4. Щелчок
       const osc3 = this.ctx.createOscillator();
       osc3.type = 'square';
       osc3.frequency.setValueAtTime(3200, t);
@@ -962,7 +957,13 @@ const BULLET_SIZE = 9;
 const BULLET_MAX_BOUNCES = 2;
 const WALL_HP_MAX = 3;
 const FIRE_COOLDOWN = 450;
-const ROUND_DELAY = 2.5;   // секунд между раундами
+const ROUND_DELAY = 3;   // секунд между раундами
+
+// Стартовые позиции танков (в пикселях)
+const TANK_START = {
+  p1: { x: TILE_SIZE * 1.5, y: TILE_SIZE * 1.5, angle: Math.PI / 4 },
+  p2: { x: CANVAS_SIZE - TILE_SIZE * 1.5, y: CANVAS_SIZE - TILE_SIZE * 1.5, angle: -Math.PI * 3 / 4 }
+};
 
 const CELL_EMPTY = 0;
 const CELL_WALL  = 1;
@@ -1054,8 +1055,11 @@ const G = {
   ctx: null,
   lastTime: 0,
   lastSyncTime: 0,
-  roundTimer: 0,           // сколько секунд осталось до нового раунда
-  roundCountdown: 3        // сколько было при старте
+  roundTimer: 0,
+  roundCountdown: 3,
+  // Синхронизация карты в онлайне
+  currentMapIndex: -1,
+  hostMapReady: false
 };
 
 // ===================================================
@@ -1258,7 +1262,7 @@ class Tank {
   update(dt) {
     if (!this.alive) { this.speedFactor = 0; return; }
 
-    // 🔒 БЛОКИРОВКА: танки НЕ двигаются пока фаза не playing
+    // Блокировка движения вне фазы playing
     if (G.phase !== 'playing') {
       this.vx = 0;
       this.vy = 0;
@@ -1588,7 +1592,7 @@ function drawBullets(ctx) {
 }
 
 // ===================================================
-// СМЕРТЬ + АВТОМАТИЧЕСКИЙ НОВЫЙ РАУНД
+// СМЕРТЬ
 // ===================================================
 function killTank(tank, killerId) {
   if (!tank.alive) return;
@@ -1607,14 +1611,12 @@ function killTank(tank, killerId) {
     updateScoreDisplay();
   }
 
-  // Через 900мс — старт нового раунда или конец игры
   setTimeout(() => {
     if (G.score.p1 >= G.maxScore) {
       endGame('p1');
     } else if (G.score.p2 >= G.maxScore) {
       endGame('p2');
     } else {
-      // 🎯 АВТОМАТИЧЕСКИЙ ЗАПУСК НОВОГО РАУНДА С ОБРАТНЫМ ОТСЧЁТОМ
       startRoundTransition(killerId);
     }
   }, 900);
@@ -1625,13 +1627,11 @@ function startRoundTransition(winnerId) {
   Sound.stopEngine();
   engineWasPlaying = false;
 
-  // Показываем баннер
   const banner = document.getElementById('roundBanner');
   const title = document.getElementById('roundBannerTitle');
   const subtitle = document.getElementById('roundBannerSubtitle');
   const countdownEl = document.getElementById('roundBannerCountdown');
 
-  // Настраиваем заголовок
   if (G.mode === 'solo') {
     if (winnerId === 'p1') {
       title.textContent = '🔵 СИНИЙ ПОБЕДИЛ';
@@ -1640,7 +1640,7 @@ function startRoundTransition(winnerId) {
       title.textContent = '🔴 КРАСНЫЙ ПОБЕДИЛ';
       title.style.color = '#ff6b6b';
     } else {
-      title.textContent = '🎯 РАУНД';
+      title.textContent = '🎯 НОВЫЙ РАУНД';
       title.style.color = '#4fc3f7';
     }
   } else {
@@ -1658,15 +1658,12 @@ function startRoundTransition(winnerId) {
 
   subtitle.textContent = `Счёт: ${G.score.p1} : ${G.score.p2}`;
 
-  // Показываем баннер
   banner.classList.add('show');
 
-  // Запускаем обратный отсчёт
   G.roundTimer = ROUND_DELAY;
   G.roundCountdown = Math.ceil(ROUND_DELAY);
   countdownEl.textContent = G.roundCountdown;
 
-  // Звук отсчёта
   Sound.playCountdown();
 }
 
@@ -1687,7 +1684,6 @@ function updateRoundTransition(dt) {
   }
 
   if (G.roundTimer <= 0) {
-    // Скрываем баннер и запускаем новый раунд
     document.getElementById('roundBanner').classList.remove('show');
     nextRoundLocal();
   }
@@ -1756,6 +1752,7 @@ function drawParticles(ctx) {
 // КАРТА + РАСТИТЕЛЬНОСТЬ
 // ===================================================
 function loadMap(index) {
+  G.currentMapIndex = index;
   G.map = MAPS[index].map(row => row.slice());
   G.mapHP = G.map.map(row => row.map(cell => cell === CELL_WALL ? WALL_HP_MAX : 0));
 
@@ -1989,17 +1986,16 @@ function drawWall(ctx, x, y, hp, isSteel) {
 }
 
 // ===================================================
-// СОЗДАНИЕ ТАНКОВ
+// СОЗДАНИЕ ТАНКОВ (всегда с одинаковых стартовых позиций)
 // ===================================================
 function createTanks() {
   const p1Local = (G.mode === 'solo') || (G.mode === 'online' && G.myRole === 'p1');
   const p2Local = (G.mode === 'solo') || (G.mode === 'online' && G.myRole === 'p2');
 
   G.tanks = {
-    p1: new Tank('p1', TILE_SIZE * 1.5, TILE_SIZE * 1.5, Math.PI / 4,
+    p1: new Tank('p1', TANK_START.p1.x, TANK_START.p1.y, TANK_START.p1.angle,
       { main: '#4fc3f7', dark: '#0288d1', light: '#81d4fa' }, p1Local),
-    p2: new Tank('p2', CANVAS_SIZE - TILE_SIZE * 1.5, CANVAS_SIZE - TILE_SIZE * 1.5,
-      -Math.PI * 3 / 4,
+    p2: new Tank('p2', TANK_START.p2.x, TANK_START.p2.y, TANK_START.p2.angle,
       { main: '#ff6b6b', dark: '#cc0000', light: '#ff9999' }, p2Local)
   };
 }
@@ -2061,7 +2057,6 @@ function update(dt, timestamp) {
       }
     }
   } else if (G.phase === 'roundWait') {
-    // Обратный отсчёт до нового раунда
     updateRoundTransition(dt);
     updateParticles(dt);
   } else {
@@ -2126,9 +2121,16 @@ function createRoom() {
     if (G.conn && G.conn.open) { conn.close(); return; }
     G.conn = conn;
     setupConnection();
+
     G.conn.on('open', () => {
       showNotification('🎉 Друг подключился!');
       Sound.playClick();
+
+      // Хост генерирует карту и отправляет гостю
+      const mapIndex = Math.floor(Math.random() * MAPS.length);
+      G.currentMapIndex = mapIndex;
+      sendMessage({ type: 'map', index: mapIndex });
+
       setTimeout(() => {
         Input.init();
         startOnlineGame();
@@ -2162,11 +2164,10 @@ function joinGame() {
     G.conn.on('open', () => {
       failed = false;
       setupConnection();
-      showNotification('✅ Подключено!');
-      setTimeout(() => {
-        Input.init();
-        startOnlineGame();
-      }, 600);
+      showNotification('✅ Подключено! Ожидание карты...');
+
+      // Гость ждёт карту от хоста и НЕ начинает игру, пока не получит
+      // Игра запустится автоматически в handleNetMessage, когда придёт 'map'
     });
   });
 
@@ -2260,8 +2261,14 @@ function handleNetMessage(msg) {
       break;
     }
     case 'map': {
+      // Загружаем карту от хоста
       loadMap(msg.index);
-      createTanks();
+      // Гость запускает игру только после получения карты
+      if (!G.isHost) {
+        // Инициализируем input для онлайна
+        Input.init();
+        startOnlineGame();
+      }
       break;
     }
     case 'restart': {
@@ -2287,12 +2294,17 @@ function startOnlineGame() {
   G.score = { p1: 0, p2: 0 };
   updateScoreDisplay();
 
-  if (G.isHost) {
+  // Если это гость и карта ещё не загружена — ждём
+  if (!G.isHost && G.currentMapIndex < 0) {
+    // Пропускаем — ждём от хоста сообщение 'map'
+    return;
+  }
+
+  // Если хост и карта ещё не загружена — загружаем
+  if (G.isHost && G.currentMapIndex < 0) {
     const mapIndex = Math.floor(Math.random() * MAPS.length);
     loadMap(mapIndex);
     sendMessage({ type: 'map', index: mapIndex });
-  } else {
-    loadMap(0);
   }
 
   createTanks();
@@ -2338,6 +2350,7 @@ function backToMenu() {
   G.peer = null; G.conn = null; G.connected = false;
   G.mode = 'solo';
   G.myRole = null;
+  G.currentMapIndex = -1;
   document.body.classList.remove('online-p1');
   document.body.classList.remove('online-p2');
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
@@ -2389,6 +2402,7 @@ function nextRoundLocal() {
 
   const mapIndex = Math.floor(Math.random() * MAPS.length);
   loadMap(mapIndex);
+  // Танки создаются заново с ИСХОДНЫХ ПОЗИЦИЙ
   createTanks();
 
   if (G.mode === 'online' && G.isHost) {
