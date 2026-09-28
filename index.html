@@ -115,83 +115,98 @@
     border: 1px solid rgba(79,195,247,0.2);
   }
 
-  /* ============ ДЖОЙСТИКИ ============ */
-  .joystick {
-    display: none; position: fixed;
+  /* ============ МОБИЛЬНОЕ УПРАВЛЕНИЕ ============ */
+  /* Контейнер для джойстика + кнопки огня */
+  .controlsMobile {
+    display: none;
+    position: fixed;
     bottom: calc(20px + env(safe-area-inset-bottom));
-    width: 130px; height: 130px;
+    z-index: 50;
+    align-items: flex-end;
+    gap: 12px;
+    touch-action: none;
+  }
+  /* Левый игрок (синий) — джойстик слева, кнопка огня справа от джойстика (по центру) */
+  .controlsMobile.left {
+    left: 20px;
+  }
+  /* Правый игрок (красный) — джойстик справа, кнопка огня слева от джойстика */
+  .controlsMobile.right {
+    right: 20px;
+    flex-direction: row-reverse;
+  }
+
+  .joystick {
+    position: relative;
+    width: 140px; height: 140px;
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, transparent 80%);
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 60%, transparent 80%);
     border: 2px solid rgba(255,255,255,0.2);
-    z-index: 50; touch-action: none;
-    transition: all 0.2s;
+    touch-action: none;
     backdrop-filter: blur(10px);
     box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+    transition: all 0.2s;
   }
-  .joystick.left {
-    left: 20px;
-    border-color: rgba(79,195,247,0.55);
-    box-shadow: 0 0 25px rgba(79,195,247,0.4), inset 0 0 30px rgba(79,195,247,0.1);
+  .joystick.p1 {
+    border-color: rgba(79,195,247,0.6);
+    box-shadow: 0 0 25px rgba(79,195,247,0.5), inset 0 0 30px rgba(79,195,247,0.15);
   }
-  .joystick.right {
-    right: 20px;
-    border-color: rgba(255,107,107,0.55);
-    box-shadow: 0 0 25px rgba(255,107,107,0.4), inset 0 0 30px rgba(255,107,107,0.1);
+  .joystick.p2 {
+    border-color: rgba(255,107,107,0.6);
+    box-shadow: 0 0 25px rgba(255,107,107,0.5), inset 0 0 30px rgba(255,107,107,0.15);
   }
 
   .joystick .stick {
     position: absolute; top: 50%; left: 50%;
-    width: 58px; height: 58px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9) 0%, rgba(200,220,240,0.6) 40%, rgba(80,100,140,0.5) 100%);
+    width: 64px; height: 64px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9) 0%, rgba(200,220,240,0.65) 40%, rgba(80,100,140,0.55) 100%);
     transform: translate(-50%, -50%);
     pointer-events: none;
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255,255,255,0.4);
+    transition: box-shadow 0.15s;
   }
-  .joystick.left .stick { box-shadow: 0 0 20px rgba(79,195,247,0.9), 0 4px 12px rgba(0,0,0,0.6); }
-  .joystick.right .stick { box-shadow: 0 0 20px rgba(255,107,107,0.9), 0 4px 12px rgba(0,0,0,0.6); }
+  .joystick.p1 .stick { box-shadow: 0 0 20px rgba(79,195,247,0.9), 0 4px 12px rgba(0,0,0,0.6); }
+  .joystick.p2 .stick { box-shadow: 0 0 20px rgba(255,107,107,0.9), 0 4px 12px rgba(0,0,0,0.6); }
 
-  .joystick .label {
-    position: absolute; bottom: -28px; left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.7em; color: rgba(255,255,255,0.6);
-    letter-spacing: 1.5px; white-space: nowrap;
-    font-weight: 600;
-    text-transform: uppercase;
+  /* Стрелки-подсказки на джойстике */
+  .joystick .arrow {
+    position: absolute;
+    color: rgba(255,255,255,0.35);
+    font-size: 1.1em;
+    font-weight: bold;
+    pointer-events: none;
+    transition: all 0.15s;
   }
+  .joystick .arrow.up    { top: 6px;    left: 50%; transform: translateX(-50%); }
+  .joystick .arrow.down  { bottom: 6px; left: 50%; transform: translateX(-50%); }
+  .joystick .arrow.left  { left: 6px;   top: 50%;  transform: translateY(-50%); }
+  .joystick .arrow.right { right: 6px;  top: 50%;  transform: translateY(-50%); }
+  .joystick.active .arrow { color: rgba(255,255,255,0.85); }
 
-  /* ============ КНОПКА ОГНЯ ============ */
+  /* Кнопка огня */
   .fireBtn {
-    display: none;
-    position: fixed;
-    right: 30px;
-    bottom: calc(180px + env(safe-area-inset-bottom));
-    width: 95px; height: 95px;
+    width: 85px; height: 85px;
     border-radius: 50%;
     background: radial-gradient(circle at 35% 35%, #ffb3b3 0%, #ff6b6b 30%, #cc0000 80%);
     border: 3px solid rgba(255,180,180,0.8);
     box-shadow:
-      0 0 35px rgba(255,107,107,0.8),
-      0 8px 25px rgba(0,0,0,0.5);
+      0 0 30px rgba(255,107,107,0.7),
+      0 6px 20px rgba(0,0,0,0.5);
     color: #fff;
-    font-size: 2.2em;
-    z-index: 55;
+    font-size: 2em;
+    display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
     touch-action: none;
     user-select: none;
-    transition: transform 0.08s;
+    transition: transform 0.08s, box-shadow 0.1s;
+    font-weight: bold;
   }
-  .fireBtn:active { transform: scale(0.9); }
-  .fireBtn .label {
-    position: absolute;
-    bottom: -26px;
-    left: 50%; transform: translateX(-50%);
-    font-size: 0.35em;
-    color: rgba(255,255,255,0.8);
-    white-space: nowrap;
-    letter-spacing: 2px;
-    font-weight: 700;
+  .fireBtn:active, .fireBtn.pressed {
+    transform: scale(0.9);
+    box-shadow:
+      0 0 50px rgba(255,107,107,1),
+      0 0 80px rgba(255,107,107,0.6);
   }
 
   /* ============ ОВЕРЛЕЙ ============ */
@@ -437,8 +452,10 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ============ АДАПТАЦИЯ ============ */
-  body.is-mobile .joystick { display: block; }
-  body.is-mobile .fireBtn { display: flex; }
+  body.is-mobile .controlsMobile { display: flex; }
+  /* В онлайн-режиме показываем только один комплект */
+  body.is-mobile.online-p1 .controlsMobile.right { display: none !important; }
+  body.is-mobile.online-p2 .controlsMobile.left { display: none !important; }
 
   @media (max-width: 600px) {
     .topBar { padding: 8px 12px; }
@@ -448,17 +465,17 @@
     .overlay h2 { font-size: 1.4em; }
     .overlay p { font-size: 0.9em; }
     .room-code-box { font-size: 1.9em; letter-spacing: 6px; padding: 18px 24px; }
-    .joystick { width: 110px; height: 110px; }
-    .joystick .stick { width: 48px; height: 48px; }
-    .fireBtn { width: 80px; height: 80px; right: 22px; bottom: calc(155px + env(safe-area-inset-bottom)); font-size: 1.8em; }
+    .joystick { width: 120px; height: 120px; }
+    .joystick .stick { width: 56px; height: 56px; }
+    .fireBtn { width: 75px; height: 75px; font-size: 1.8em; }
     .controls-info { padding: 15px 20px; }
     .menu-buttons button { flex: 1 1 100%; max-width: 100%; }
   }
 
   @media (orientation: landscape) and (max-height: 500px) {
-    .joystick { width: 90px; height: 90px; bottom: 8px; }
-    .joystick .stick { width: 40px; height: 40px; }
-    .fireBtn { width: 70px; height: 70px; right: 18px; bottom: calc(120px + env(safe-area-inset-bottom)); font-size: 1.5em; }
+    .joystick { width: 100px; height: 100px; }
+    .joystick .stick { width: 46px; height: 46px; }
+    .fireBtn { width: 65px; height: 65px; font-size: 1.6em; }
     .topBar { padding: 4px 10px; }
     .player-score { padding: 3px 10px; font-size: 0.75em; }
     .overlay h1 { font-size: 1.5em; }
@@ -489,16 +506,29 @@
   </div>
 </div>
 
-<div class="joystick left" id="joyLeft">
-  <div class="stick" id="stickLeft"></div>
-  <div class="label">ДВИЖЕНИЕ</div>
-</div>
-<div class="joystick right" id="joyRight">
-  <div class="stick" id="stickRight"></div>
-  <div class="label">ДВИЖЕНИЕ</div>
+<!-- Мобильное управление: ЛЕВОЕ (для синего P1) -->
+<div class="controlsMobile left" id="controlsP1">
+  <div class="joystick p1" id="joyLeft">
+    <div class="arrow up">▲</div>
+    <div class="arrow down">▼</div>
+    <div class="arrow left">◀</div>
+    <div class="arrow right">▶</div>
+    <div class="stick" id="stickLeft"></div>
+  </div>
+  <div class="fireBtn" id="fireBtnLeft">💥</div>
 </div>
 
-<div class="fireBtn" id="fireBtn">💥<div class="label">ОГОНЬ</div></div>
+<!-- Мобильное управление: ПРАВОЕ (для красного P2) -->
+<div class="controlsMobile right" id="controlsP2">
+  <div class="joystick p2" id="joyRight">
+    <div class="arrow up">▲</div>
+    <div class="arrow down">▼</div>
+    <div class="arrow left">◀</div>
+    <div class="arrow right">▶</div>
+    <div class="stick" id="stickRight"></div>
+  </div>
+  <div class="fireBtn" id="fireBtnRight">💥</div>
+</div>
 
 <div class="notification" id="notification"></div>
 
@@ -508,24 +538,22 @@
   <p>Аркадный бой для двоих</p>
 
   <div class="controls-info">
-    <h3>⚙ УПРАВЛЕНИЕ (ПК)</h3>
+    <h3>⚙ УПРАВЛЕНИЕ</h3>
     <div class="row">
-      <span class="p1">🔵 Игрок 1</span>
-      <span>
-        <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
-        + <span class="key">ПРОБЕЛ</span>
-      </span>
+      <span class="p1">🔵 Создатель игры</span>
+      <span><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> + <span class="key">ПРОБЕЛ</span></span>
     </div>
     <div class="row">
-      <span class="p2">🔴 Игрок 2</span>
-      <span>
-        <span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span>
-        + <span class="key">ENTER</span>
-      </span>
+      <span class="p2">🔴 Подключившийся</span>
+      <span><span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span> + <span class="key">ENTER</span></span>
     </div>
     <div class="row">
-      <span>📱 Телефон</span>
-      <span>Джойстики + 💥</span>
+      <span>📱 На телефоне</span>
+      <span>Джойстик + 💥</span>
+    </div>
+    <div class="row">
+      <span>🎯 Управление</span>
+      <span>Вверх = вверх, вниз = вниз (по карте)</span>
     </div>
   </div>
 
@@ -547,6 +575,7 @@
   </div>
   <div class="loader"></div>
   <p id="waitingText" style="color:#4fc3f7">⏳ Ожидание подключения...</p>
+  <p style="color:#a0b8d0; font-size:0.9em; margin-top:10px">Вы играете 🔵 <b>синим</b> танком</p>
   <button class="danger" onclick="backToMenu()">← НАЗАД</button>
 </div>
 
@@ -559,6 +588,7 @@
   </div>
   <button onclick="joinGame()">🚀 ПОДКЛЮЧИТЬСЯ</button>
   <div id="joinError" style="color:#ff6b6b; margin-top:15px; min-height:24px; font-weight:600;"></div>
+  <p style="color:#a0b8d0; font-size:0.9em; margin-top:10px">Вы играете 🔴 <b>красным</b> танком</p>
   <button class="danger" onclick="backToMenu()">← НАЗАД</button>
 </div>
 
@@ -690,7 +720,6 @@ const Sound = {
     } catch(e) {}
   },
 
-  // === ЗВУК ДВИГАТЕЛЯ ===
   startEngine() {
     try {
       if (!this.enabled || !this.ctx) return;
@@ -721,7 +750,6 @@ const Sound = {
       this.engineOsc.start();
       this.engineOsc2.start();
     } catch(e) {
-      console.warn('startEngine error:', e);
       this.enginePlaying = false;
     }
   },
@@ -767,7 +795,6 @@ const Sound = {
     this.noise(0.55, 0.45, 700, 0, 'lowpass', 1.5);
     this.noise(0.35, 0.3, 2500, 0.05, 'highpass', 0.5);
     this.sweep(1800, 80, 0.35, 'square', 0.2);
-    this.tone(30, 1.2, 'sine', 0.25, 0.3);
   },
   playWallHit() {
     this.init();
@@ -918,12 +945,16 @@ const G = {
 
 // ===================================================
 // INPUT
+// Абсолютное управление: направления задаются в мировых координатах
 // ===================================================
 const Input = {
   keys: {},
-  joystickLeft: { x: 0, y: 0, active: false, id: null },
+  // Для мобильного: один джойстик — четыре направления в мировых осях
+  // Вектор (x, y): -1..1. y>0 — вниз, y<0 — вверх
+  myJoystick: { x: 0, y: 0, active: false, id: null },
+  // В соло-режиме для второго танка используем правый джойстик
   joystickRight: { x: 0, y: 0, active: false, id: null },
-  fireBtnPressed: false,
+  firePressed: false,
 
   init() {
     document.addEventListener('keydown', (e) => {
@@ -935,9 +966,19 @@ const Input = {
     });
 
     if (DeviceInfo.isTouch) {
-      this.setupJoystick('joyLeft', 'stickLeft', 'joystickLeft');
-      this.setupJoystick('joyRight', 'stickRight', 'joystickRight');
-      this.setupFireButton();
+      // В solo используем оба, в онлайн — только свой
+      if (G.mode === 'solo') {
+        this.setupJoystick('joyLeft', 'stickLeft', 'myJoystick');
+        this.setupJoystick('joyRight', 'stickRight', 'joystickRight');
+      } else {
+        // В онлайне — только свой джойстик
+        if (G.myRole === 'p1') {
+          this.setupJoystick('joyLeft', 'stickLeft', 'myJoystick');
+        } else if (G.myRole === 'p2') {
+          this.setupJoystick('joyRight', 'stickRight', 'myJoystick');
+        }
+      }
+      this.setupFireButtons();
     }
   },
 
@@ -961,6 +1002,7 @@ const Input = {
       state.x = dx / maxDist;
       state.y = dy / maxDist;
       stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      joy.classList.add('active');
     };
 
     joy.addEventListener('touchstart', (e) => {
@@ -986,63 +1028,137 @@ const Input = {
       state.x = 0;
       state.y = 0;
       stick.style.transform = 'translate(-50%, -50%)';
+      joy.classList.remove('active');
     };
     joy.addEventListener('touchend', end, { passive: false });
     joy.addEventListener('touchcancel', end, { passive: false });
   },
 
-  setupFireButton() {
-    const btn = document.getElementById('fireBtn');
-    btn.addEventListener('touchstart', (e) => {
+  setupFireButtons() {
+    // Левая кнопка (для P1)
+    const bl = document.getElementById('fireBtnLeft');
+    bl.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      this.fireBtnPressed = true;
+      bl.classList.add('pressed');
+      this.firePressed = true;
     }, { passive: false });
-    btn.addEventListener('touchend', (e) => {
+    bl.addEventListener('touchend', (e) => {
       e.preventDefault();
-      this.fireBtnPressed = false;
+      bl.classList.remove('pressed');
+      this.firePressed = false;
     }, { passive: false });
-    btn.addEventListener('touchcancel', (e) => {
+    bl.addEventListener('touchcancel', (e) => {
       e.preventDefault();
-      this.fireBtnPressed = false;
+      bl.classList.remove('pressed');
+      this.firePressed = false;
+    }, { passive: false });
+
+    // Правая кнопка (для P2)
+    const br = document.getElementById('fireBtnRight');
+    br.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      br.classList.add('pressed');
+      this.firePressed = true;
+    }, { passive: false });
+    br.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      br.classList.remove('pressed');
+      this.firePressed = false;
+    }, { passive: false });
+    br.addEventListener('touchcancel', (e) => {
+      e.preventDefault();
+      br.classList.remove('pressed');
+      this.firePressed = false;
     }, { passive: false });
   },
 
-  // Преобразуем джойстики в виртуальные клавиши
-  updateVirtualKeys() {
-    if (!DeviceInfo.isTouch) return;
+  // Возвращает вектор движения для конкретного танка
+  // Для мобильного — из джойстика, для ПК — из клавиш
+  getMoveVector(tankId) {
+    const dvx = 0, dvy = 0;
 
-    const jl = this.joystickLeft;
-    const jr = this.joystickRight;
+    // ============ МОБИЛЬНЫЙ ============
+    if (DeviceInfo.isTouch) {
+      let joy = null;
 
-    this.keys['joy1_up']    = jl.active && jl.y < -0.3;
-    this.keys['joy1_down']  = jl.active && jl.y >  0.3;
-    this.keys['joy1_left']  = jl.active && jl.x < -0.3;
-    this.keys['joy1_right'] = jl.active && jl.x >  0.3;
+      if (G.mode === 'solo') {
+        // В соло: P1 → myJoystick (левая), P2 → joystickRight (правая)
+        joy = (tankId === 'p1') ? this.myJoystick : this.joystickRight;
+      } else {
+        // В онлайне: только свой танк
+        if (tankId === G.myRole) {
+          joy = this.myJoystick;
+        } else {
+          return { x: 0, y: 0, active: false };
+        }
+      }
 
-    this.keys['joy2_up']    = jr.active && jr.y < -0.3;
-    this.keys['joy2_down']  = jr.active && jr.y >  0.3;
-    this.keys['joy2_left']  = jr.active && jr.x < -0.3;
-    this.keys['joy2_right'] = jr.active && jr.x >  0.3;
+      if (!joy || !joy.active) return { x: 0, y: 0, active: false };
 
-    // Для стрельбы обоих танков (solo)
-    this.keys['joy_shoot1'] = this.fireBtnPressed;
-    this.keys['joy_shoot2'] = this.fireBtnPressed;
+      // Мёртвая зона
+      let x = Math.abs(joy.x) > 0.25 ? joy.x : 0;
+      let y = Math.abs(joy.y) > 0.25 ? joy.y : 0;
+
+      return { x, y, active: true };
+    }
+
+    // ============ ПК ============
+    const keys = this.keys;
+    let vx = 0, vy = 0;
+
+    if (tankId === 'p1') {
+      if (keys['w']) vy -= 1;
+      if (keys['s']) vy += 1;
+      if (keys['a']) vx -= 1;
+      if (keys['d']) vx += 1;
+    } else if (tankId === 'p2') {
+      if (keys['arrowup']) vy -= 1;
+      if (keys['arrowdown']) vy += 1;
+      if (keys['arrowleft']) vx -= 1;
+      if (keys['arrowright']) vx += 1;
+    }
+
+    return { x: vx, y: vy, active: (vx !== 0 || vy !== 0) };
+  },
+
+  // Возвращает, нажата ли кнопка огня для конкретного танка
+  isFirePressed(tankId) {
+    if (DeviceInfo.isTouch) {
+      // В соло — P1 стреляет левой кнопкой, P2 — правой
+      if (G.mode === 'solo') {
+        // В соло обе кнопки стреляют из своего танка — используем одну общую firePressed,
+        // но чтобы обе кнопки работали независимо, усложним:
+        // Для простоты: обе кнопки стреляют для своих танков
+        const bl = document.getElementById('fireBtnLeft');
+        const br = document.getElementById('fireBtnRight');
+        if (tankId === 'p1') return bl.classList.contains('pressed');
+        if (tankId === 'p2') return br.classList.contains('pressed');
+      }
+      // В онлайне — только своя кнопка
+      if (tankId === G.myRole) return this.firePressed;
+      return false;
+    }
+
+    // ПК
+    if (tankId === 'p1') return !!this.keys[' '];
+    if (tankId === 'p2') return !!this.keys['enter'];
+    return false;
   }
 };
 
 // ===================================================
 // ТАНК
+// Управление АБСОЛЮТНОЕ: вектор движения задаёт направление в мировых осях
 // ===================================================
 class Tank {
-  constructor(id, x, y, angle, color, controls, isLocalInput) {
+  constructor(id, x, y, angle, color, isLocalInput) {
     this.id = id;
     this.x = x;
     this.y = y;
     this.angle = angle;
     this.turretAngle = angle;
     this.color = color;
-    this.controls = controls;
-    this.isLocalInput = isLocalInput;  // true = читает клавиатуру/джойстики
+    this.isLocalInput = isLocalInput;
     this.alive = true;
     this.trackOffset = 0;
     this.vx = 0;
@@ -1058,45 +1174,45 @@ class Tank {
       return;
     }
 
-    let forward = 0, strafe = 0;
+    let moveVec = { x: 0, y: 0, active: false };
 
     // Читаем input ТОЛЬКО если это локальный танк
     if (this.isLocalInput) {
-      const keys = Input.keys;
-      if (keys[this.controls.up]) forward += 1;
-      if (keys[this.controls.down]) forward -= 1;
-      if (keys[this.controls.left]) strafe -= 1;
-      if (keys[this.controls.right]) strafe += 1;
+      moveVec = Input.getMoveVector(this.id);
     }
 
-    if (forward !== 0 || strafe !== 0) {
-      const moveAngle = this.angle + Math.atan2(strafe, forward);
-      const speedMult = (forward === 0) ? 0.7 : 1;
-      this.vx = Math.sin(moveAngle) * TANK_SPEED * speedMult;
-      this.vy = -Math.cos(moveAngle) * TANK_SPEED * speedMult;
+    if (moveVec.active && (moveVec.x !== 0 || moveVec.y !== 0)) {
+      // Нормализуем вектор движения
+      const mag = Math.hypot(moveVec.x, moveVec.y);
+      const nx = moveVec.x / mag;
+      const ny = moveVec.y / mag;
+
+      // АБСОЛЮТНОЕ движение: vx/vy сразу задают направление по карте
+      this.vx = nx * TANK_SPEED;
+      this.vy = ny * TANK_SPEED;
 
       const newX = this.x + this.vx;
       const newY = this.y + this.vy;
+
       if (!this.collides(newX, this.y)) this.x = newX;
       if (!this.collides(this.x, newY)) this.y = newY;
 
-      this.trackOffset += (Math.abs(forward) + Math.abs(strafe) * 0.7) * 0.2;
+      this.trackOffset += 0.3;
       this.speedFactor = Math.min(1, this.speedFactor + dt * 3);
+
+      // Танк поворачивается в сторону движения
+      const moveAngle = Math.atan2(this.vx, -this.vy);
+      let diff = moveAngle - this.angle;
+      while (diff > Math.PI) diff -= 2 * Math.PI;
+      while (diff < -Math.PI) diff += 2 * Math.PI;
+      this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.15);
     } else {
       this.vx = 0;
       this.vy = 0;
       this.speedFactor = Math.max(0, this.speedFactor - dt * 3);
     }
 
-    // Плавный поворот корпуса
-    if (this.vx !== 0 || this.vy !== 0) {
-      const moveAngle = Math.atan2(this.vx, -this.vy);
-      let diff = moveAngle - this.angle;
-      while (diff > Math.PI) diff -= 2 * Math.PI;
-      while (diff < -Math.PI) diff += 2 * Math.PI;
-      this.angle += Math.sign(diff) * Math.min(Math.abs(diff), 0.1);
-    }
-
+    // Башня всегда смотрит туда же, куда корпус
     this.turretAngle = this.angle;
 
     // Границы
@@ -1106,10 +1222,9 @@ class Tank {
 
     if (this.recoil > 0) this.recoil = Math.max(0, this.recoil - dt * 5);
 
-    // Стрельба — только для локального
-    if (this.isLocalInput) {
-      const shootPressed = Input.keys[this.controls.shoot] || Input.fireBtnPressed;
-      if (shootPressed) this.tryShoot();
+    // Стрельба
+    if (this.isLocalInput && Input.isFirePressed(this.id)) {
+      this.tryShoot();
     }
   }
 
@@ -1162,12 +1277,10 @@ class Tank {
     ctx.save();
     ctx.rotate(this.angle);
 
-    // Гусеницы
     ctx.fillStyle = '#0d0d0d';
     ctx.fillRect(-TANK_SIZE/2, -TANK_SIZE/2, 8, TANK_SIZE);
     ctx.fillRect(TANK_SIZE/2 - 8, -TANK_SIZE/2, 8, TANK_SIZE);
 
-    // Сегменты
     ctx.fillStyle = '#2a2a2a';
     const segOffset = (this.trackOffset % 8);
     for (let i = -TANK_SIZE/2; i < TANK_SIZE/2 - 3; i += 8) {
@@ -1175,7 +1288,6 @@ class Tank {
       ctx.fillRect(TANK_SIZE/2 - 7, i + segOffset, 6, 4);
     }
 
-    // Корпус
     const grad = ctx.createLinearGradient(-TANK_SIZE/2, -TANK_SIZE/2, TANK_SIZE/2, TANK_SIZE/2);
     grad.addColorStop(0, this.color.light);
     grad.addColorStop(0.35, this.color.main);
@@ -1184,16 +1296,13 @@ class Tank {
     ctx.fillStyle = grad;
     ctx.fillRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, TANK_SIZE - 8);
 
-    // Блик
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, 3);
 
-    // Обводка
     ctx.strokeStyle = this.color.dark;
     ctx.lineWidth = 1.5;
     ctx.strokeRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, TANK_SIZE - 8);
 
-    // Полоски
     ctx.strokeStyle = 'rgba(0,0,0,0.35)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1210,7 +1319,6 @@ class Tank {
     ctx.rotate(this.turretAngle);
     ctx.translate(0, recoilOffset);
 
-    // Основа башни
     const turretGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, 14);
     turretGrad.addColorStop(0, this.color.light);
     turretGrad.addColorStop(0.5, this.color.main);
@@ -1224,13 +1332,11 @@ class Tank {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Блик
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath();
     ctx.arc(-3, -3, 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Ствол
     const barrelGrad = ctx.createLinearGradient(-3, 0, 3, 0);
     barrelGrad.addColorStop(0, this.color.dark);
     barrelGrad.addColorStop(0.5, this.color.main);
@@ -1238,11 +1344,9 @@ class Tank {
     ctx.fillStyle = barrelGrad;
     ctx.fillRect(-3, -TANK_SIZE/2 - 8, 6, TANK_SIZE/2 + 8);
 
-    // Основание
     ctx.fillStyle = this.color.dark;
     ctx.fillRect(-5, -TANK_SIZE/2 - 2, 10, 9);
 
-    // Кольцо
     ctx.fillStyle = this.color.light;
     ctx.fillRect(-4, -TANK_SIZE/2 + 8, 8, 2);
 
@@ -1291,7 +1395,6 @@ function updateBullets(dt) {
       const newX = b.x + stepX;
       const newY = b.y + stepY;
 
-      // Проверка танков
       let hitTank = null;
       for (const id in G.tanks) {
         const tank = G.tanks[id];
@@ -1524,7 +1627,6 @@ function drawMap(ctx) {
     }
   }
 
-  // Следы гусениц
   for (const t of G.treads) {
     ctx.globalAlpha = t.life * 0.4;
     ctx.fillStyle = '#0a0a14';
@@ -1617,26 +1719,17 @@ function drawWall(ctx, x, y, hp, isSteel) {
 // СОЗДАНИЕ ТАНКОВ
 // ===================================================
 function createTanks() {
-  // Определяем кто читает input
-  // solo: оба танка локальные (у каждого свои кнопки)
-  // online: только мой танк локальный
+  // В соло — оба локальные
+  // В онлайне — только мой локальный
   const p1Local = (G.mode === 'solo') || (G.mode === 'online' && G.myRole === 'p1');
   const p2Local = (G.mode === 'solo') || (G.mode === 'online' && G.myRole === 'p2');
 
-  const controls1 = DeviceInfo.isTouch
-    ? { up: 'joy1_up', down: 'joy1_down', left: 'joy1_left', right: 'joy1_right', shoot: 'joy_shoot1' }
-    : { up: 'w', down: 's', left: 'a', right: 'd', shoot: ' ' };
-
-  const controls2 = DeviceInfo.isTouch
-    ? { up: 'joy2_up', down: 'joy2_down', left: 'joy2_left', right: 'joy2_right', shoot: 'joy_shoot2' }
-    : { up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright', shoot: 'enter' };
-
   G.tanks = {
     p1: new Tank('p1', TILE_SIZE * 1.5, TILE_SIZE * 1.5, Math.PI / 4,
-      { main: '#4fc3f7', dark: '#0288d1', light: '#81d4fa' }, controls1, p1Local),
+      { main: '#4fc3f7', dark: '#0288d1', light: '#81d4fa' }, p1Local),
     p2: new Tank('p2', CANVAS_SIZE - TILE_SIZE * 1.5, CANVAS_SIZE - TILE_SIZE * 1.5,
       -Math.PI * 3 / 4,
-      { main: '#ff6b6b', dark: '#cc0000', light: '#ff9999' }, controls2, p2Local)
+      { main: '#ff6b6b', dark: '#cc0000', light: '#ff9999' }, p2Local)
   };
 }
 
@@ -1656,20 +1749,15 @@ function gameLoop(timestamp) {
 }
 
 function update(dt) {
-  // Обновляем виртуальные клавиши от джойстиков
-  Input.updateVirtualKeys();
-
   if (G.phase === 'playing') {
     if (G.tanks.p1) G.tanks.p1.update(dt);
     if (G.tanks.p2) G.tanks.p2.update(dt);
     updateBullets(dt);
     updateParticles(dt);
 
-    // Следы
     for (const t of G.treads) t.life -= dt * 0.3;
     G.treads = G.treads.filter(t => t.life > 0);
 
-    // Следы от танков
     try {
       for (const id of ['p1', 'p2']) {
         const t = G.tanks[id];
@@ -1681,13 +1769,11 @@ function update(dt) {
       }
     } catch(e) {}
 
-    // Звук двигателя (безопасно)
     try {
       if (Sound.enabled && Sound.ctx) {
         const speedP1 = G.tanks.p1 ? G.tanks.p1.speedFactor : 0;
         const speedP2 = G.tanks.p2 ? G.tanks.p2.speedFactor : 0;
         const speed = Math.max(speedP1, speedP2);
-
         if (!engineWasPlaying) {
           Sound.startEngine();
           engineWasPlaying = true;
@@ -1696,7 +1782,6 @@ function update(dt) {
       }
     } catch(e) {}
 
-    // Синхронизация
     if (G.mode === 'online' && G.connected) {
       const now = performance.now();
       if (now - G.lastSyncTime > 50) {
@@ -1746,6 +1831,10 @@ function createRoom() {
   G.mode = 'online';
   G.myRole = 'p1';
 
+  // Показываем только левый джойстик (для P1)
+  document.body.classList.remove('online-p2');
+  document.body.classList.add('online-p1');
+
   document.getElementById('roomCodeDisplay').textContent = G.roomCode;
   const base = window.location.origin + window.location.pathname;
   document.getElementById('linkInput').value = `${base}?room=${G.roomCode}`;
@@ -1763,7 +1852,11 @@ function createRoom() {
     G.conn.on('open', () => {
       showNotification('🎉 Друг подключился!');
       Sound.playClick();
-      setTimeout(() => startOnlineGame(), 800);
+      // Пересоздаём input для онлайна
+      setTimeout(() => {
+        Input.init();
+        startOnlineGame();
+      }, 800);
     });
   });
 
@@ -1782,6 +1875,10 @@ function joinGame() {
   G.isHost = false;
   G.myRole = 'p2';
 
+  // Показываем только правый джойстик (для P2)
+  document.body.classList.remove('online-p1');
+  document.body.classList.add('online-p2');
+
   G.peer = new Peer({ debug: 1, config: ICE_SERVERS });
 
   let failed = false;
@@ -1791,7 +1888,10 @@ function joinGame() {
       failed = false;
       setupConnection();
       showNotification('✅ Подключено!');
-      setTimeout(() => startOnlineGame(), 600);
+      setTimeout(() => {
+        Input.init();
+        startOnlineGame();
+      }, 600);
     });
   });
 
@@ -1954,6 +2054,9 @@ function backToMenu() {
   if (G.conn) { try { G.conn.close(); } catch(e){} }
   G.peer = null; G.conn = null; G.connected = false;
   G.mode = 'solo';
+  G.myRole = null;
+  document.body.classList.remove('online-p1');
+  document.body.classList.remove('online-p2');
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   document.getElementById('menuScreen').classList.remove('hidden');
 }
@@ -1975,6 +2078,8 @@ function startSoloMode() {
   Sound.playClick();
   G.mode = 'solo';
   G.myRole = null;
+  document.body.classList.remove('online-p1');
+  document.body.classList.remove('online-p2');
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   G.phase = 'playing';
   G.score = { p1: 0, p2: 0 };
@@ -1986,6 +2091,8 @@ function startSoloMode() {
   G.treads = [];
   document.getElementById('name1').textContent = 'P1';
   document.getElementById('name2').textContent = 'P2';
+  // Переинициализируем джойстики для соло
+  Input.init();
   showNotification('🎯 БОЙ!');
 }
 
