@@ -18,25 +18,17 @@
     touch-action: none;
   }
 
-  /* ============ ФОН С АНИМАЦИЕЙ ============ */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background:
       radial-gradient(circle at 20% 10%, rgba(79,195,247,0.12) 0%, transparent 45%),
-      radial-gradient(circle at 80% 90%, rgba(255,107,107,0.10) 0%, transparent 45%),
-      radial-gradient(circle at 50% 50%, rgba(255,213,79,0.04) 0%, transparent 60%);
+      radial-gradient(circle at 80% 90%, rgba(255,107,107,0.10) 0%, transparent 45%);
     pointer-events: none;
     z-index: 0;
-    animation: bgShift 20s ease-in-out infinite;
-  }
-  @keyframes bgShift {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
   }
 
-  /* ============ КОНТЕЙНЕР ============ */
   #gameWrap {
     position: fixed; inset: 0;
     display: flex; flex-direction: column; overflow: hidden;
@@ -72,18 +64,17 @@
     border: 2px solid;
     transition: all 0.3s ease;
     font-size: 0.9em;
-    position: relative;
     backdrop-filter: blur(10px);
   }
   .player-score.p1 {
     border-color: rgba(79,195,247,0.6);
     color: #4fc3f7;
-    box-shadow: 0 0 20px rgba(79,195,247,0.25), inset 0 0 15px rgba(79,195,247,0.08);
+    box-shadow: 0 0 20px rgba(79,195,247,0.25);
   }
   .player-score.p2 {
     border-color: rgba(255,107,107,0.6);
     color: #ff6b6b;
-    box-shadow: 0 0 20px rgba(255,107,107,0.25), inset 0 0 15px rgba(255,107,107,0.08);
+    box-shadow: 0 0 20px rgba(255,107,107,0.25);
   }
   .player-score .label { font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85em; }
   .player-score .score {
@@ -120,19 +111,17 @@
     max-width: 100%; max-height: 100%;
     box-shadow:
       0 0 60px rgba(79,195,247,0.25),
-      0 0 120px rgba(0,0,0,0.9),
-      0 0 2px rgba(79,195,247,0.5);
+      0 0 120px rgba(0,0,0,0.9);
     border: 1px solid rgba(79,195,247,0.2);
   }
 
-  /* ============ ДЖОЙСТИКИ (УЛУЧШЕННЫЕ) ============ */
+  /* ============ ДЖОЙСТИКИ ============ */
   .joystick {
     display: none; position: fixed;
     bottom: calc(20px + env(safe-area-inset-bottom));
     width: 130px; height: 130px;
     border-radius: 50%;
-    background:
-      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, transparent 80%);
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, transparent 80%);
     border: 2px solid rgba(255,255,255,0.2);
     z-index: 50; touch-action: none;
     transition: all 0.2s;
@@ -153,19 +142,13 @@
   .joystick .stick {
     position: absolute; top: 50%; left: 50%;
     width: 58px; height: 58px; border-radius: 50%;
-    background:
-      radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9) 0%, rgba(200,220,240,0.6) 40%, rgba(80,100,140,0.5) 100%);
+    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9) 0%, rgba(200,220,240,0.6) 40%, rgba(80,100,140,0.5) 100%);
     transform: translate(-50%, -50%);
     pointer-events: none;
     border: 1px solid rgba(255,255,255,0.3);
-    transition: box-shadow 0.15s;
   }
-  .joystick.left .stick {
-    box-shadow: 0 0 20px rgba(79,195,247,0.9), 0 4px 12px rgba(0,0,0,0.6);
-  }
-  .joystick.right .stick {
-    box-shadow: 0 0 20px rgba(255,107,107,0.9), 0 4px 12px rgba(0,0,0,0.6);
-  }
+  .joystick.left .stick { box-shadow: 0 0 20px rgba(79,195,247,0.9), 0 4px 12px rgba(0,0,0,0.6); }
+  .joystick.right .stick { box-shadow: 0 0 20px rgba(255,107,107,0.9), 0 4px 12px rgba(0,0,0,0.6); }
 
   .joystick .label {
     position: absolute; bottom: -28px; left: 50%;
@@ -184,31 +167,22 @@
     bottom: calc(180px + env(safe-area-inset-bottom));
     width: 95px; height: 95px;
     border-radius: 50%;
-    background:
-      radial-gradient(circle at 35% 35%, #ffb3b3 0%, #ff6b6b 30%, #cc0000 80%);
+    background: radial-gradient(circle at 35% 35%, #ffb3b3 0%, #ff6b6b 30%, #cc0000 80%);
     border: 3px solid rgba(255,180,180,0.8);
     box-shadow:
       0 0 35px rgba(255,107,107,0.8),
-      0 8px 25px rgba(0,0,0,0.5),
-      inset 0 0 30px rgba(255,255,255,0.2);
+      0 8px 25px rgba(0,0,0,0.5);
     color: #fff;
     font-size: 2.2em;
     z-index: 55;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     font-weight: bold;
     touch-action: none;
     user-select: none;
-    transition: transform 0.08s, box-shadow 0.1s;
+    transition: transform 0.08s;
   }
-  .fireBtn:active {
-    transform: scale(0.9);
-    box-shadow:
-      0 0 50px rgba(255,107,107,1),
-      0 0 80px rgba(255,107,107,0.5),
-      inset 0 0 30px rgba(255,255,255,0.3);
-  }
+  .fireBtn:active { transform: scale(0.9); }
   .fireBtn .label {
     position: absolute;
     bottom: -26px;
@@ -243,7 +217,6 @@
     animation: shine 4s linear infinite;
     letter-spacing: 4px;
     font-weight: 800;
-    text-shadow: 0 0 60px rgba(79,195,247,0.5);
   }
   @keyframes shine { to { background-position: 300% center; } }
 
@@ -252,7 +225,6 @@
     color: #4fc3f7;
     letter-spacing: 2px;
     font-weight: 700;
-    text-shadow: 0 0 30px rgba(79,195,247,0.4);
   }
 
   .overlay p {
@@ -268,26 +240,12 @@
     border: none; border-radius: 14px;
     cursor: pointer; color: #fff;
     background: linear-gradient(135deg, #4fc3f7, #0288d1);
-    box-shadow:
-      0 6px 20px rgba(79,195,247,0.4),
-      inset 0 1px 0 rgba(255,255,255,0.25),
-      0 -2px 0 rgba(0,0,0,0.2) inset;
+    box-shadow: 0 6px 20px rgba(79,195,247,0.4);
     text-transform: uppercase;
     font-family: inherit;
     margin: 6px; min-height: 52px;
     transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
   }
-  .overlay button::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s;
-  }
-  .overlay button:hover::before { left: 100%; }
   .overlay button:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(79,195,247,0.6); }
   .overlay button:active { transform: translateY(0); }
 
@@ -311,15 +269,11 @@
     margin-top: 15px;
     width: 100%; max-width: 500px;
   }
-  .menu-buttons button {
-    flex: 1 1 200px;
-    max-width: 240px;
-  }
+  .menu-buttons button { flex: 1 1 200px; max-width: 240px; }
 
   /* ============ КОМНАТА ============ */
   .room-code-box {
-    background:
-      linear-gradient(135deg, rgba(79,195,247,0.15), rgba(0,229,255,0.08));
+    background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(0,229,255,0.08));
     border: 2px dashed rgba(79,195,247,0.6);
     border-radius: 18px;
     padding: 22px 35px;
@@ -328,9 +282,7 @@
     font-weight: 800;
     letter-spacing: 10px;
     color: #00e5ff;
-    text-shadow:
-      0 0 20px rgba(0,229,255,0.9),
-      0 0 40px rgba(0,229,255,0.5);
+    text-shadow: 0 0 20px rgba(0,229,255,0.9);
     animation: pulse-glow 2s ease-in-out infinite;
     word-break: break-all;
     font-family: 'Courier New', monospace;
@@ -372,7 +324,6 @@
     letter-spacing: 8px; font-weight: 800;
     text-transform: uppercase;
     width: 250px; font-family: 'Courier New', monospace;
-    transition: all 0.3s;
   }
   input.codeInput:focus {
     border-color: #4fc3f7;
@@ -389,9 +340,7 @@
     max-width: 520px;
     text-align: left;
     width: 100%;
-    box-shadow:
-      0 8px 30px rgba(0,0,0,0.5),
-      inset 0 1px 0 rgba(255,255,255,0.08);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     backdrop-filter: blur(15px);
   }
   .controls-info h3 {
@@ -426,7 +375,6 @@
     display: inline-block;
     margin: 1px;
     font-size: 0.9em;
-    box-shadow: 0 2px 0 rgba(0,0,0,0.3);
   }
   .controls-info .p1 { color: #4fc3f7; font-weight: 700; }
   .controls-info .p2 { color: #ff6b6b; font-weight: 700; }
@@ -442,16 +390,12 @@
     font-size: 1.8em;
     font-weight: 800;
     z-index: 200;
-    box-shadow:
-      0 25px 70px rgba(0,0,0,0.7),
-      0 0 100px rgba(79,195,247,0.5),
-      inset 0 1px 0 rgba(255,255,255,0.3);
+    box-shadow: 0 25px 70px rgba(0,0,0,0.7);
     text-align: center;
     pointer-events: none;
     transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     max-width: 90vw;
     letter-spacing: 2px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
   }
   .notification.show { transform: translate(-50%, -50%) scale(1); }
 
@@ -472,17 +416,14 @@
     cursor: pointer;
     z-index: 20;
     backdrop-filter: blur(10px);
-    transition: all 0.3s;
     box-shadow: 0 0 20px rgba(102,187,106,0.4);
   }
-  .soundBtn:active { transform: scale(0.9); }
   .soundBtn.muted {
     border-color: rgba(117,117,117,0.6);
     box-shadow: none;
     background: rgba(0,0,0,0.4);
   }
 
-  /* ============ LOADER ============ */
   .loader {
     display: inline-block;
     width: 50px; height: 50px;
@@ -501,7 +442,7 @@
 
   @media (max-width: 600px) {
     .topBar { padding: 8px 12px; }
-    .player-score { padding: 5px 12px; font-size: 0.8em; border-radius: 10px; }
+    .player-score { padding: 5px 12px; font-size: 0.8em; }
     .player-score .score { font-size: 1.3em; }
     .overlay h1 { font-size: 2em; letter-spacing: 2px; }
     .overlay h2 { font-size: 1.4em; }
@@ -548,7 +489,6 @@
   </div>
 </div>
 
-<!-- Мобильные джойстики -->
 <div class="joystick left" id="joyLeft">
   <div class="stick" id="stickLeft"></div>
   <div class="label">ДВИЖЕНИЕ</div>
@@ -558,10 +498,8 @@
   <div class="label">ДВИЖЕНИЕ</div>
 </div>
 
-<!-- Кнопка огня -->
 <div class="fireBtn" id="fireBtn">💥<div class="label">ОГОНЬ</div></div>
 
-<!-- УВЕДОМЛЕНИЕ -->
 <div class="notification" id="notification"></div>
 
 <!-- ГЛАВНОЕ МЕНЮ -->
@@ -640,7 +578,7 @@
 
 <script>
 // ===================================================
-// WebRTC конфигурация
+// WebRTC
 // ===================================================
 const ICE_SERVERS = {
   iceServers: [
@@ -698,139 +636,124 @@ const Sound = {
   },
 
   tone(freq, duration, type = 'sine', volume = 0.3, delay = 0) {
-    if (!this.enabled || !this.ctx) return;
-    const t = this.ctx.currentTime + delay;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t);
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(volume, t + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-    osc.connect(gain); gain.connect(this.masterGain);
-    osc.start(t); osc.stop(t + duration + 0.05);
+    try {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime + delay;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(volume, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+      osc.connect(gain); gain.connect(this.masterGain);
+      osc.start(t); osc.stop(t + duration + 0.05);
+    } catch(e) {}
   },
 
   sweep(f1, f2, dur, type = 'sine', vol = 0.3, delay = 0) {
-    if (!this.enabled || !this.ctx) return;
-    const t = this.ctx.currentTime + delay;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(f1, t);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(f2, 1), t + dur);
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(vol, t + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    osc.connect(gain); gain.connect(this.masterGain);
-    osc.start(t); osc.stop(t + dur + 0.05);
+    try {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime + delay;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(f1, t);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(f2, 1), t + dur);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.connect(gain); gain.connect(this.masterGain);
+      osc.start(t); osc.stop(t + dur + 0.05);
+    } catch(e) {}
   },
 
   noise(dur, vol = 0.3, freq = 1000, delay = 0, type = 'lowpass', Q = 1) {
-    if (!this.enabled || !this.ctx) return;
-    const t = this.ctx.currentTime + delay;
-    const size = Math.max(1, Math.floor(this.ctx.sampleRate * dur));
-    const buf = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < size; i++) d[i] = Math.random() * 2 - 1;
-    const src = this.ctx.createBufferSource();
-    src.buffer = buf;
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = type;
-    filter.frequency.setValueAtTime(freq, t);
-    filter.Q.value = Q;
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(vol, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    src.connect(filter); filter.connect(gain); gain.connect(this.masterGain);
-    src.start(t); src.stop(t + dur);
+    try {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime + delay;
+      const size = Math.max(1, Math.floor(this.ctx.sampleRate * dur));
+      const buf = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < size; i++) d[i] = Math.random() * 2 - 1;
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = type;
+      filter.frequency.setValueAtTime(freq, t);
+      filter.Q.value = Q;
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(filter); filter.connect(gain); gain.connect(this.masterGain);
+      src.start(t); src.stop(t + dur);
+    } catch(e) {}
   },
 
   // === ЗВУК ДВИГАТЕЛЯ ===
   startEngine() {
-    if (!this.enabled || !this.ctx) return;
-    if (this.enginePlaying) return;
-    this.enginePlaying = true;
+    try {
+      if (!this.enabled || !this.ctx) return;
+      if (this.enginePlaying) return;
+      this.enginePlaying = true;
 
-    // Основной низкий гул
-    this.engineOsc = this.ctx.createOscillator();
-    this.engineOsc.type = 'sawtooth';
-    this.engineOsc.frequency.value = 55;
+      this.engineOsc = this.ctx.createOscillator();
+      this.engineOsc.type = 'sawtooth';
+      this.engineOsc.frequency.value = 55;
 
-    // Второй слой для насыщенности
-    this.engineOsc2 = this.ctx.createOscillator();
-    this.engineOsc2.type = 'square';
-    this.engineOsc2.frequency.value = 28;
+      this.engineOsc2 = this.ctx.createOscillator();
+      this.engineOsc2.type = 'square';
+      this.engineOsc2.frequency.value = 28;
 
-    // Фильтр для "мотора"
-    this.engineFilter = this.ctx.createBiquadFilter();
-    this.engineFilter.type = 'lowpass';
-    this.engineFilter.frequency.value = 400;
-    this.engineFilter.Q.value = 5;
+      this.engineFilter = this.ctx.createBiquadFilter();
+      this.engineFilter.type = 'lowpass';
+      this.engineFilter.frequency.value = 400;
+      this.engineFilter.Q.value = 5;
 
-    // Гейн
-    this.engineGain = this.ctx.createGain();
-    this.engineGain.gain.value = 0;
+      this.engineGain = this.ctx.createGain();
+      this.engineGain.gain.value = 0.05;
 
-    // Шум для "поршней"
-    const noiseSize = Math.floor(this.ctx.sampleRate * 0.5);
-    const noiseBuf = this.ctx.createBuffer(1, noiseSize, this.ctx.sampleRate);
-    const nd = noiseBuf.getChannelData(0);
-    for (let i = 0; i < noiseSize; i++) nd[i] = Math.random() * 2 - 1;
-    const noiseSrc = this.ctx.createBufferSource();
-    noiseSrc.buffer = noiseBuf;
-    noiseSrc.loop = true;
-    const noiseFilter = this.ctx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.value = 200;
-    noiseFilter.Q.value = 2;
-    const noiseGain = this.ctx.createGain();
-    noiseGain.gain.value = 0.15;
+      this.engineOsc.connect(this.engineFilter);
+      this.engineOsc2.connect(this.engineFilter);
+      this.engineFilter.connect(this.engineGain);
+      this.engineGain.connect(this.masterGain);
 
-    noiseSrc.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(this.engineGain);
-
-    this.engineOsc.connect(this.engineFilter);
-    this.engineOsc2.connect(this.engineFilter);
-    this.engineFilter.connect(this.engineGain);
-    this.engineGain.connect(this.masterGain);
-
-    this.engineOsc.start();
-    this.engineOsc2.start();
-    noiseSrc.start();
-    this._noiseSrc = noiseSrc;
+      this.engineOsc.start();
+      this.engineOsc2.start();
+    } catch(e) {
+      console.warn('startEngine error:', e);
+      this.enginePlaying = false;
+    }
   },
 
   updateEngine(speed) {
-    if (!this.enabled || !this.ctx || !this.engineGain) return;
-    const t = this.ctx.currentTime;
-    // speed 0..1
-    const vol = 0.04 + speed * 0.12;
-    const freq = 45 + speed * 55;
-    const freq2 = 25 + speed * 30;
-    this.engineGain.gain.linearRampToValueAtTime(vol, t + 0.08);
-    if (this.engineOsc) this.engineOsc.frequency.linearRampToValueAtTime(freq, t + 0.08);
-    if (this.engineOsc2) this.engineOsc2.frequency.linearRampToValueAtTime(freq2, t + 0.08);
-    if (this.engineFilter) this.engineFilter.frequency.linearRampToValueAtTime(300 + speed * 500, t + 0.08);
+    try {
+      if (!this.enabled || !this.ctx || !this.engineGain || !this.engineOsc) return;
+      const t = this.ctx.currentTime;
+      const vol = 0.04 + speed * 0.14;
+      const freq = 45 + speed * 55;
+      const freq2 = 25 + speed * 30;
+      this.engineGain.gain.setValueAtTime(vol, t);
+      this.engineOsc.frequency.setValueAtTime(freq, t);
+      if (this.engineOsc2) this.engineOsc2.frequency.setValueAtTime(freq2, t);
+      if (this.engineFilter) this.engineFilter.frequency.setValueAtTime(300 + speed * 500, t);
+    } catch(e) {}
   },
 
   stopEngine() {
     if (!this.enginePlaying) return;
     this.enginePlaying = false;
-    try { this.engineGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.2); } catch(e){}
+    try { this.engineGain.gain.setValueAtTime(0, this.ctx.currentTime); } catch(e){}
     setTimeout(() => {
-      try { this.engineOsc?.stop(); } catch(e){}
-      try { this.engineOsc2?.stop(); } catch(e){}
-      try { this._noiseSrc?.stop(); } catch(e){}
+      try { this.engineOsc && this.engineOsc.stop(); } catch(e){}
+      try { this.engineOsc2 && this.engineOsc2.stop(); } catch(e){}
       this.engineOsc = null;
       this.engineOsc2 = null;
       this.engineGain = null;
       this.engineFilter = null;
-    }, 300);
+    }, 200);
   },
 
-  // === СТАРЫЕ ЗВУКИ ===
   playShoot() {
     this.init();
     this.sweep(700, 100, 0.18, 'square', 0.25);
@@ -872,7 +795,6 @@ const Sound = {
     this.init();
     [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => this.tone(f, 0.4, 'triangle', 0.4, i * 0.15));
     this.tone(1567.98, 1.2, 'sine', 0.35, 0.8);
-    this.noise(1.2, 0.35, 400, 1.0, 'lowpass', 1.5);
   }
 };
 
@@ -985,9 +907,8 @@ const G = {
   tanks: {},
   bullets: [],
   particles: [],
-  treads: [],       // следы гусениц
+  treads: [],
   score: { p1: 0, p2: 0 },
-  round: 1,
   maxScore: 5,
   canvas: null,
   ctx: null,
@@ -1006,8 +927,7 @@ const Input = {
 
   init() {
     document.addEventListener('keydown', (e) => {
-      const k = e.key.toLowerCase();
-      this.keys[k] = true;
+      this.keys[e.key.toLowerCase()] = true;
       if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
     });
     document.addEventListener('keyup', (e) => {
@@ -1087,13 +1007,13 @@ const Input = {
     }, { passive: false });
   },
 
+  // Преобразуем джойстики в виртуальные клавиши
   updateVirtualKeys() {
     if (!DeviceInfo.isTouch) return;
 
     const jl = this.joystickLeft;
     const jr = this.joystickRight;
 
-    // Всегда — оба джойстика (для solo и для online если что)
     this.keys['joy1_up']    = jl.active && jl.y < -0.3;
     this.keys['joy1_down']  = jl.active && jl.y >  0.3;
     this.keys['joy1_left']  = jl.active && jl.x < -0.3;
@@ -1103,6 +1023,10 @@ const Input = {
     this.keys['joy2_down']  = jr.active && jr.y >  0.3;
     this.keys['joy2_left']  = jr.active && jr.x < -0.3;
     this.keys['joy2_right'] = jr.active && jr.x >  0.3;
+
+    // Для стрельбы обоих танков (solo)
+    this.keys['joy_shoot1'] = this.fireBtnPressed;
+    this.keys['joy_shoot2'] = this.fireBtnPressed;
   }
 };
 
@@ -1110,7 +1034,7 @@ const Input = {
 // ТАНК
 // ===================================================
 class Tank {
-  constructor(id, x, y, angle, color, controls, isRemote = false) {
+  constructor(id, x, y, angle, color, controls, isLocalInput) {
     this.id = id;
     this.x = x;
     this.y = y;
@@ -1118,23 +1042,26 @@ class Tank {
     this.turretAngle = angle;
     this.color = color;
     this.controls = controls;
+    this.isLocalInput = isLocalInput;  // true = читает клавиатуру/джойстики
     this.alive = true;
     this.trackOffset = 0;
     this.vx = 0;
     this.vy = 0;
     this.lastFireTime = 0;
-    this.isRemote = isRemote;    // управляется по сети
-    this.speedFactor = 0;        // для звука двигателя
-    this.recoil = 0;             // отдача пушки
+    this.speedFactor = 0;
+    this.recoil = 0;
   }
 
   update(dt) {
-    if (!this.alive) { this.speedFactor = 0; return; }
+    if (!this.alive) {
+      this.speedFactor = 0;
+      return;
+    }
 
     let forward = 0, strafe = 0;
 
-    // Если это мой танк — читаем input
-    if (this.shouldReadInput()) {
+    // Читаем input ТОЛЬКО если это локальный танк
+    if (this.isLocalInput) {
       const keys = Input.keys;
       if (keys[this.controls.up]) forward += 1;
       if (keys[this.controls.down]) forward -= 1;
@@ -1177,19 +1104,13 @@ class Tank {
     this.x = Math.max(half, Math.min(CANVAS_SIZE - half, this.x));
     this.y = Math.max(half, Math.min(CANVAS_SIZE - half, this.y));
 
-    // Отдача
-    if (this.recoil > 0) this.recoil -= dt * 5;
+    if (this.recoil > 0) this.recoil = Math.max(0, this.recoil - dt * 5);
 
-    // Стрельба
-    if (this.shouldReadInput()) {
+    // Стрельба — только для локального
+    if (this.isLocalInput) {
       const shootPressed = Input.keys[this.controls.shoot] || Input.fireBtnPressed;
       if (shootPressed) this.tryShoot();
     }
-  }
-
-  shouldReadInput() {
-    if (G.mode === 'solo') return true;    // оба танка на одном устройстве
-    return this.id === G.myRole;           // в онлайне — только мой
   }
 
   tryShoot() {
@@ -1199,12 +1120,11 @@ class Tank {
     this.recoil = 1;
     fireBulletFrom(this);
 
-    // В онлайне отправляем
     if (G.mode === 'online' && this.id === G.myRole) {
       const angle = this.turretAngle;
-      const startX = this.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
-      const startY = this.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
-      sendMessage({ type: 'shot', x: startX, y: startY, angle });
+      const sx = this.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
+      const sy = this.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
+      sendMessage({ type: 'shot', x: sx, y: sy, angle });
     }
   }
 
@@ -1231,13 +1151,11 @@ class Tank {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Тень с размытием
+    // Тень
     ctx.save();
     ctx.rotate(this.angle);
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
-    ctx.filter = 'blur(2px)';
     ctx.fillRect(-TANK_SIZE/2 + 3, -TANK_SIZE/2 + 5, TANK_SIZE, TANK_SIZE);
-    ctx.filter = 'none';
     ctx.restore();
 
     // Корпус
@@ -1249,7 +1167,7 @@ class Tank {
     ctx.fillRect(-TANK_SIZE/2, -TANK_SIZE/2, 8, TANK_SIZE);
     ctx.fillRect(TANK_SIZE/2 - 8, -TANK_SIZE/2, 8, TANK_SIZE);
 
-    // Сегменты гусениц
+    // Сегменты
     ctx.fillStyle = '#2a2a2a';
     const segOffset = (this.trackOffset % 8);
     for (let i = -TANK_SIZE/2; i < TANK_SIZE/2 - 3; i += 8) {
@@ -1257,12 +1175,7 @@ class Tank {
       ctx.fillRect(TANK_SIZE/2 - 7, i + segOffset, 6, 4);
     }
 
-    // Светлые кромки гусениц
-    ctx.fillStyle = '#4a4a4a';
-    ctx.fillRect(-TANK_SIZE/2 + 1, -TANK_SIZE/2 + 1, 6, 2);
-    ctx.fillRect(TANK_SIZE/2 - 7, -TANK_SIZE/2 + 1, 6, 2);
-
-    // Корпус с градиентом
+    // Корпус
     const grad = ctx.createLinearGradient(-TANK_SIZE/2, -TANK_SIZE/2, TANK_SIZE/2, TANK_SIZE/2);
     grad.addColorStop(0, this.color.light);
     grad.addColorStop(0.35, this.color.main);
@@ -1280,7 +1193,7 @@ class Tank {
     ctx.lineWidth = 1.5;
     ctx.strokeRect(-TANK_SIZE/2 + 7, -TANK_SIZE/2 + 4, TANK_SIZE - 14, TANK_SIZE - 8);
 
-    // Защитные полосы на корпусе
+    // Полоски
     ctx.strokeStyle = 'rgba(0,0,0,0.35)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1290,25 +1203,14 @@ class Tank {
     ctx.lineTo(TANK_SIZE/2 - 10, 3);
     ctx.stroke();
 
-    // Задние огни
-    ctx.fillStyle = 'rgba(255,50,50,0.7)';
-    ctx.beginPath();
-    ctx.arc(0, TANK_SIZE/2 - 5, 2, 0, Math.PI * 2);
-    ctx.fill();
-
     ctx.restore();
 
-    // Башня с отдачей
+    // Башня
     ctx.save();
     ctx.rotate(this.turretAngle);
     ctx.translate(0, recoilOffset);
 
-    // Тень башни
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetY = 2;
-
-    // Основа башни — скруглённый восьмиугольник
+    // Основа башни
     const turretGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, 14);
     turretGrad.addColorStop(0, this.color.light);
     turretGrad.addColorStop(0.5, this.color.main);
@@ -1318,15 +1220,11 @@ class Tank {
     ctx.arc(0, 0, 11, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-
-    // Кольцо башни
     ctx.strokeStyle = this.color.dark;
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Блик на башне
+    // Блик
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath();
     ctx.arc(-3, -3, 5, 0, Math.PI * 2);
@@ -1338,15 +1236,15 @@ class Tank {
     barrelGrad.addColorStop(0.5, this.color.main);
     barrelGrad.addColorStop(1, this.color.dark);
     ctx.fillStyle = barrelGrad;
-    ctx.fillRect(-3, -TANK_SIZE/2 - 8 + recoilOffset, 6, TANK_SIZE/2 + 8);
+    ctx.fillRect(-3, -TANK_SIZE/2 - 8, 6, TANK_SIZE/2 + 8);
 
-    // Утолщение ствола у основания
+    // Основание
     ctx.fillStyle = this.color.dark;
-    ctx.fillRect(-5, -TANK_SIZE/2 - 2 + recoilOffset, 10, 9);
+    ctx.fillRect(-5, -TANK_SIZE/2 - 2, 10, 9);
 
-    // Кольцо на стволе
+    // Кольцо
     ctx.fillStyle = this.color.light;
-    ctx.fillRect(-4, -TANK_SIZE/2 + 8 + recoilOffset, 8, 2);
+    ctx.fillRect(-4, -TANK_SIZE/2 + 8, 8, 2);
 
     ctx.restore();
     ctx.restore();
@@ -1358,23 +1256,22 @@ class Tank {
 // ===================================================
 function fireBulletFrom(tank) {
   const angle = tank.turretAngle;
-  const startX = tank.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
-  const startY = tank.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
+  const sx = tank.x + Math.sin(angle) * (TANK_SIZE / 2 + 4);
+  const sy = tank.y - Math.cos(angle) * (TANK_SIZE / 2 + 4);
 
   G.bullets.push({
-    x: startX, y: startY,
+    x: sx, y: sy,
     vx: Math.sin(angle) * BULLET_SPEED,
     vy: -Math.cos(angle) * BULLET_SPEED,
     owner: tank.id,
     bounces: 0,
     alive: true,
-    trail: [],
-    from: tank.id
+    trail: []
   });
 
   Sound.playShoot();
   vibrate(20);
-  spawnParticles(startX, startY, 'muzzle', tank.color.main);
+  spawnParticles(sx, sy, 'muzzle', tank.color.main);
 }
 
 function updateBullets(dt) {
@@ -1391,7 +1288,6 @@ function updateBullets(dt) {
       if (!b.alive) break;
       const stepX = b.vx * speedFactor / steps;
       const stepY = b.vy * speedFactor / steps;
-
       const newX = b.x + stepX;
       const newY = b.y + stepY;
 
@@ -1410,11 +1306,10 @@ function updateBullets(dt) {
 
       if (hitTank) {
         b.alive = false;
-        killTank(hitTank, b.owner, b);
+        killTank(hitTank, b.owner);
         break;
       }
 
-      // Проверка стен
       const col = Math.floor(newX / TILE_SIZE);
       const row = Math.floor(newY / TILE_SIZE);
 
@@ -1432,8 +1327,6 @@ function updateBullets(dt) {
           Sound.playBounce();
           break;
         }
-
-        // Определяем сторону отскока
         const cellX = col * TILE_SIZE;
         const cellY = row * TILE_SIZE;
         const relX = newX - cellX;
@@ -1443,7 +1336,6 @@ function updateBullets(dt) {
         const minDist = Math.min(distLeft, distRight, distTop, distBottom);
         if (minDist === distLeft || minDist === distRight) b.vx = -b.vx;
         else b.vy = -b.vy;
-
         b.x += b.vx * 0.5;
         b.y += b.vy * 0.5;
         Sound.playBounce();
@@ -1477,7 +1369,6 @@ function updateBullets(dt) {
 
 function drawBullets(ctx) {
   for (const b of G.bullets) {
-    // Трейл
     for (let i = 0; i < b.trail.length; i++) {
       const t = b.trail[i];
       const a = (i / b.trail.length) * 0.5;
@@ -1488,11 +1379,9 @@ function drawBullets(ctx) {
       ctx.fill();
     }
 
-    // Свечение
     ctx.shadowColor = '#ffaa00';
     ctx.shadowBlur = 20;
 
-    // Основное тело
     const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, BULLET_SIZE);
     grad.addColorStop(0, '#ffffaa');
     grad.addColorStop(0.4, '#ffdd00');
@@ -1503,7 +1392,6 @@ function drawBullets(ctx) {
     ctx.arc(b.x, b.y, BULLET_SIZE / 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Ядро
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.arc(b.x, b.y, BULLET_SIZE / 4, 0, Math.PI * 2);
@@ -1516,28 +1404,23 @@ function drawBullets(ctx) {
 // ===================================================
 // СМЕРТЬ
 // ===================================================
-function killTank(tank, killerId, bullet) {
+function killTank(tank, killerId) {
   if (!tank.alive) return;
   tank.alive = false;
 
   spawnParticles(tank.x, tank.y, 'bigExplosion');
-  spawnParticles(tank.x, tank.y, 'debris', tank.color.main);
   Sound.playExplosion();
   vibrate([80, 30, 80]);
 
-  // Уведомляем противника в онлайне
   if (G.mode === 'online' && tank.id !== G.myRole) {
-    // Мы убили — отправляем hit
     sendMessage({ type: 'hit', killer: G.myRole });
   }
 
-  // Очки
   if (killerId && G.score[killerId] !== undefined) {
     G.score[killerId]++;
     updateScoreDisplay();
   }
 
-  // Проверка победы
   setTimeout(() => {
     if (G.score.p1 >= G.maxScore) endGame('p1');
     else if (G.score.p2 >= G.maxScore) endGame('p2');
@@ -1555,7 +1438,7 @@ function spawnParticles(x, y, type, colorOverride = null) {
     spark: ['#ffff00', '#ffdd00', '#ffffff'],
     debris: ['#c17a3f', '#8a4a20', '#5a2a10'],
     explosion: ['#ff4400', '#ffaa00', '#ff6600', '#ffff00'],
-    bigExplosion: ['#ff4400', '#ffaa00', '#ff6600', '#ffff00', '#ffffff', '#888888', '#444444']
+    bigExplosion: ['#ff4400', '#ffaa00', '#ff6600', '#ffff00', '#ffffff', '#888888']
   }[type] || ['#fff'];
 
   for (let i = 0; i < count; i++) {
@@ -1570,8 +1453,8 @@ function spawnParticles(x, y, type, colorOverride = null) {
       life, maxLife: life,
       size: type === 'bigExplosion' ? 4 + Math.random() * 6 : 2 + Math.random() * 3,
       color,
-      spin: (Math.random() - 0.5) * 0.3,
-      rotation: Math.random() * Math.PI * 2
+      rotation: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.3
     });
   }
 }
@@ -1594,7 +1477,6 @@ function drawParticles(ctx) {
     const alpha = Math.min(1, p.life / p.maxLife * 2);
     ctx.globalAlpha = alpha;
     ctx.fillStyle = p.color;
-
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rotation);
@@ -1614,7 +1496,6 @@ function loadMap(index) {
 }
 
 function drawMap(ctx) {
-  // Пол
   for (let r = 0; r < MAP_SIZE; r++) {
     for (let c = 0; c < MAP_SIZE; c++) {
       const cell = G.map[r][c];
@@ -1622,7 +1503,6 @@ function drawMap(ctx) {
       const y = r * TILE_SIZE;
 
       if (cell === CELL_EMPTY) {
-        // Пол с текстурой
         const grad = ctx.createLinearGradient(x, y, x + TILE_SIZE, y + TILE_SIZE);
         if ((r + c) % 2 === 0) {
           grad.addColorStop(0, '#1e2438');
@@ -1633,17 +1513,9 @@ function drawMap(ctx) {
         }
         ctx.fillStyle = grad;
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-
-        // Сетка
         ctx.strokeStyle = 'rgba(79,195,247,0.06)';
         ctx.lineWidth = 1;
         ctx.strokeRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
-
-        // Уголки-маркеры
-        if ((r + c) % 4 === 0) {
-          ctx.fillStyle = 'rgba(79,195,247,0.15)';
-          ctx.fillRect(x + 2, y + 2, 3, 3);
-        }
       } else if (cell === CELL_WALL) {
         drawWall(ctx, x, y, G.mapHP[r][c], false);
       } else if (cell === CELL_STEEL) {
@@ -1652,7 +1524,7 @@ function drawMap(ctx) {
     }
   }
 
-  // Следы гусениц поверх пола
+  // Следы гусениц
   for (const t of G.treads) {
     ctx.globalAlpha = t.life * 0.4;
     ctx.fillStyle = '#0a0a14';
@@ -1662,11 +1534,8 @@ function drawMap(ctx) {
 }
 
 function drawWall(ctx, x, y, hp, isSteel) {
-  // Тень
   ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.filter = 'blur(2px)';
   ctx.fillRect(x + 4, y + 4, TILE_SIZE, TILE_SIZE);
-  ctx.filter = 'none';
 
   if (isSteel) {
     const grad = ctx.createLinearGradient(x, y, x + TILE_SIZE, y + TILE_SIZE);
@@ -1677,41 +1546,31 @@ function drawWall(ctx, x, y, hp, isSteel) {
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-    // Панель внутри
     ctx.fillStyle = 'rgba(255,255,255,0.08)';
     ctx.fillRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
 
-    // Болты
     ctx.fillStyle = '#1a2a3a';
     for (const [dx, dy] of [[8,8], [TILE_SIZE-11,8], [8,TILE_SIZE-11], [TILE_SIZE-11,TILE_SIZE-11]]) {
       ctx.beginPath();
       ctx.arc(x + dx, y + dy, 3, 0, Math.PI * 2);
       ctx.fill();
-      // Блик болта
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.beginPath();
-      ctx.arc(x + dx - 1, y + dy - 1, 1.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#1a2a3a';
     }
 
-    // Верхний блик
     ctx.fillStyle = 'rgba(255,255,255,0.2)';
     ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, 3);
   } else {
     const damage = 1 - (hp / WALL_HP_MAX);
-    const r = Math.round(200 - damage * 100);
-    const g = Math.round(130 - damage * 70);
-    const b = Math.round(60 - damage * 40);
+    const rr = Math.round(200 - damage * 100);
+    const gg = Math.round(130 - damage * 70);
+    const bb = Math.round(60 - damage * 40);
 
     const grad = ctx.createLinearGradient(x, y, x, y + TILE_SIZE);
-    grad.addColorStop(0, `rgb(${r},${g},${b})`);
-    grad.addColorStop(0.5, `rgb(${Math.max(r-30,0)},${Math.max(g-20,0)},${Math.max(b-15,0)})`);
-    grad.addColorStop(1, `rgb(${Math.max(r-70,0)},${Math.max(g-50,0)},${Math.max(b-30,0)})`);
+    grad.addColorStop(0, `rgb(${rr},${gg},${bb})`);
+    grad.addColorStop(0.5, `rgb(${Math.max(rr-30,0)},${Math.max(gg-20,0)},${Math.max(bb-15,0)})`);
+    grad.addColorStop(1, `rgb(${Math.max(rr-70,0)},${Math.max(gg-50,0)},${Math.max(bb-30,0)})`);
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-    // Кирпичики
     ctx.strokeStyle = 'rgba(0,0,0,0.5)';
     ctx.lineWidth = 1.8;
 
@@ -1735,7 +1594,6 @@ function drawWall(ctx, x, y, hp, isSteel) {
       }
     }
 
-    // Трещины при повреждении
     if (damage > 0.25) {
       ctx.strokeStyle = 'rgba(20,10,0,0.7)';
       ctx.lineWidth = 2;
@@ -1745,22 +1603,11 @@ function drawWall(ctx, x, y, hp, isSteel) {
       ctx.lineTo(x + 10, y + 28);
       ctx.stroke();
     }
-    if (damage > 0.6) {
-      ctx.strokeStyle = 'rgba(20,10,0,0.75)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x + TILE_SIZE - 6, y + 10);
-      ctx.lineTo(x + TILE_SIZE - 14, y + 20);
-      ctx.lineTo(x + TILE_SIZE - 8, y + 32);
-      ctx.stroke();
-    }
 
-    // Верхний блик
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, 2);
   }
 
-  // Обводка
   ctx.strokeStyle = isSteel ? 'rgba(20,30,40,0.9)' : 'rgba(60,30,10,0.9)';
   ctx.lineWidth = 1.5;
   ctx.strokeRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
@@ -1770,32 +1617,34 @@ function drawWall(ctx, x, y, hp, isSteel) {
 // СОЗДАНИЕ ТАНКОВ
 // ===================================================
 function createTanks() {
-  // На тач-устройствах даём джойстики, на ПК — клавиатуру
-  const isTouch = DeviceInfo.isTouch;
-  
-  const controls1 = isTouch
+  // Определяем кто читает input
+  // solo: оба танка локальные (у каждого свои кнопки)
+  // online: только мой танк локальный
+  const p1Local = (G.mode === 'solo') || (G.mode === 'online' && G.myRole === 'p1');
+  const p2Local = (G.mode === 'solo') || (G.mode === 'online' && G.myRole === 'p2');
+
+  const controls1 = DeviceInfo.isTouch
     ? { up: 'joy1_up', down: 'joy1_down', left: 'joy1_left', right: 'joy1_right', shoot: 'joy_shoot1' }
     : { up: 'w', down: 's', left: 'a', right: 'd', shoot: ' ' };
 
-  const controls2 = isTouch
+  const controls2 = DeviceInfo.isTouch
     ? { up: 'joy2_up', down: 'joy2_down', left: 'joy2_left', right: 'joy2_right', shoot: 'joy_shoot2' }
     : { up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright', shoot: 'enter' };
 
-  // Для онлайна: мой танк читает input только если его роль совпадает
-  // В соло — оба танка читают input (у каждого свои кнопки)
-
   G.tanks = {
     p1: new Tank('p1', TILE_SIZE * 1.5, TILE_SIZE * 1.5, Math.PI / 4,
-      { main: '#4fc3f7', dark: '#0288d1', light: '#81d4fa' }, controls1),
+      { main: '#4fc3f7', dark: '#0288d1', light: '#81d4fa' }, controls1, p1Local),
     p2: new Tank('p2', CANVAS_SIZE - TILE_SIZE * 1.5, CANVAS_SIZE - TILE_SIZE * 1.5,
       -Math.PI * 3 / 4,
-      { main: '#ff6b6b', dark: '#cc0000', light: '#ff9999' }, controls2)
+      { main: '#ff6b6b', dark: '#cc0000', light: '#ff9999' }, controls2, p2Local)
   };
 }
 
 // ===================================================
 // ИГРОВОЙ ЦИКЛ
 // ===================================================
+let engineWasPlaying = false;
+
 function gameLoop(timestamp) {
   const dt = Math.min((timestamp - G.lastTime) / 1000, 0.1);
   G.lastTime = timestamp;
@@ -1806,16 +1655,9 @@ function gameLoop(timestamp) {
   requestAnimationFrame(gameLoop);
 }
 
-let engineWasPlaying = false;
-
 function update(dt) {
+  // Обновляем виртуальные клавиши от джойстиков
   Input.updateVirtualKeys();
-
-  // Эмулируем "выстрел" для touch — устанавливаем виртуальные клавиши
-  if (DeviceInfo.isTouch) {
-    Input.keys['joy_shoot1'] = Input.fireBtnPressed;
-    Input.keys['joy_shoot2'] = Input.fireBtnPressed;
-  }
 
   if (G.phase === 'playing') {
     if (G.tanks.p1) G.tanks.p1.update(dt);
@@ -1823,34 +1665,36 @@ function update(dt) {
     updateBullets(dt);
     updateParticles(dt);
 
-    // Обновляем следы
+    // Следы
     for (const t of G.treads) t.life -= dt * 0.3;
     G.treads = G.treads.filter(t => t.life > 0);
 
-    // Звук двигателя
-    if (Sound.enabled && Sound.ctx) {
-      const myTank = G.mode === 'solo' 
-        ? { speed: Math.max(G.tanks.p1.speedFactor, G.tanks.p2.speedFactor) }
-        : G.tanks[G.myRole];
-      const speed = myTank ? myTank.speedFactor : 0;
-      
-      if (!engineWasPlaying) {
-        Sound.startEngine();
-        engineWasPlaying = true;
-      }
-      Sound.updateEngine(speed);
-
-      // Следы гусениц от моего танка
-      if (speed > 0.3) {
-        const t = G.mode === 'solo' ? G.tanks.p1 : G.tanks[G.myRole];
-        if (t && t.alive) {
-          if (Math.random() < 0.6) {
-            G.treads.push({ x: t.x - Math.sin(t.angle) * 8, y: t.y + Math.cos(t.angle) * 8, life: 1 });
-            G.treads.push({ x: t.x + Math.sin(t.angle) * 8, y: t.y - Math.cos(t.angle) * 8, life: 1 });
-          }
+    // Следы от танков
+    try {
+      for (const id of ['p1', 'p2']) {
+        const t = G.tanks[id];
+        if (!t || !t.alive || !t.isLocalInput) continue;
+        if (t.speedFactor > 0.4 && Math.random() < 0.5) {
+          G.treads.push({ x: t.x - Math.sin(t.angle) * 10, y: t.y + Math.cos(t.angle) * 10, life: 1 });
+          G.treads.push({ x: t.x + Math.sin(t.angle) * 10, y: t.y - Math.cos(t.angle) * 10, life: 1 });
         }
       }
-    }
+    } catch(e) {}
+
+    // Звук двигателя (безопасно)
+    try {
+      if (Sound.enabled && Sound.ctx) {
+        const speedP1 = G.tanks.p1 ? G.tanks.p1.speedFactor : 0;
+        const speedP2 = G.tanks.p2 ? G.tanks.p2.speedFactor : 0;
+        const speed = Math.max(speedP1, speedP2);
+
+        if (!engineWasPlaying) {
+          Sound.startEngine();
+          engineWasPlaying = true;
+        }
+        Sound.updateEngine(speed);
+      }
+    } catch(e) {}
 
     // Синхронизация
     if (G.mode === 'online' && G.connected) {
@@ -1873,23 +1717,15 @@ function render() {
   const ctx = G.ctx;
   if (!ctx) return;
 
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-
-  // Фон
   const bgGrad = ctx.createLinearGradient(0, 0, CANVAS_SIZE, CANVAS_SIZE);
   bgGrad.addColorStop(0, '#0f1420');
   bgGrad.addColorStop(1, '#0a0e18');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-  if (G.map && G.map.length > 0) {
-    drawMap(ctx);
-  }
-
-  if (G.tanks.p1 && G.tanks.p1.alive) G.tanks.p1.draw(ctx);
-  if (G.tanks.p2 && G.tanks.p2.alive) G.tanks.p2.draw(ctx);
-
+  if (G.map && G.map.length > 0) drawMap(ctx);
+  if (G.tanks.p1) G.tanks.p1.draw(ctx);
+  if (G.tanks.p2) G.tanks.p2.draw(ctx);
   drawBullets(ctx);
   drawParticles(ctx);
 }
@@ -2010,7 +1846,6 @@ function handleNetMessage(msg) {
       const opp = G.myRole === 'p1' ? 'p2' : 'p1';
       const o = G.tanks[opp];
       if (o) {
-        // Плавно интерполируем
         o.x += (msg.x - o.x) * 0.5;
         o.y += (msg.y - o.y) * 0.5;
         o.angle = msg.angle;
@@ -2076,28 +1911,22 @@ function startOnlineGame() {
   } else {
     loadMap(0);
   }
-  
-  // Создаём танки заново с учётом роли
+
   createTanks();
 
   G.bullets = [];
   G.particles = [];
   G.treads = [];
 
-  // Имена
   document.getElementById('name1').textContent = G.myRole === 'p1' ? 'ВЫ' : 'ПРОТИВНИК';
   document.getElementById('name2').textContent = G.myRole === 'p2' ? 'ВЫ' : 'ПРОТИВНИК';
-
-  // Стартуем звук двигателя
-  Sound.startEngine();
-  engineWasPlaying = true;
 
   showNotification('🎯 БОЙ!');
   vibrate(50);
 }
 
 // ===================================================
-// UI ФУНКЦИИ
+// UI
 // ===================================================
 function showCreateScreen() {
   Sound.playClick();
@@ -2145,18 +1974,18 @@ function copyLink() {
 function startSoloMode() {
   Sound.playClick();
   G.mode = 'solo';
+  G.myRole = null;
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   G.phase = 'playing';
   G.score = { p1: 0, p2: 0 };
   updateScoreDisplay();
+  loadMap(Math.floor(Math.random() * MAPS.length));
   createTanks();
   G.bullets = [];
   G.particles = [];
   G.treads = [];
   document.getElementById('name1').textContent = 'P1';
   document.getElementById('name2').textContent = 'P2';
-  Sound.startEngine();
-  engineWasPlaying = true;
   showNotification('🎯 БОЙ!');
 }
 
@@ -2179,9 +2008,6 @@ function nextRoundLocal() {
   if (G.mode === 'online' && G.isHost) {
     sendMessage({ type: 'map', index: mapIndex });
   }
-
-  Sound.startEngine();
-  engineWasPlaying = true;
 }
 
 function restartMatch() {
@@ -2229,7 +2055,7 @@ function endGame(winnerId) {
   Sound.stopEngine();
   engineWasPlaying = false;
 
-  let title = '🏆 ИГРА ОКОНЧЕНА';
+  let title = '🏆 КОНЕЦ';
   let text = '';
 
   if (G.mode === 'solo') {
